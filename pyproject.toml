@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "banshee-lite-chi"
+version = "0.1.0.dev0"
+description = "Bayesian stellar-flare detection with exposure-averaged continuous chi-square measurements"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "Logan Snyder"}]
+dependencies = [
+  "numpy>=1.26,<3", "scipy>=1.11,<2", "pandas>=2.1,<3", "astropy>=6,<8",
+  "lightkurve>=2.5,<3", "matplotlib>=3.8,<4", "tqdm>=4.66,<5", "pyarrow>=14,<24",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Astronomy",
+  "Operating System :: POSIX :: Linux", "Operating System :: MacOS",
+  "Programming Language :: Python :: 3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10"]
+
+[project.scripts]
+banshee-lite-chi = "banshee_cli:run"
+
+[project.urls]
+Repository = "https://github.com/Logan-J-Snyder/BANSHEE"
+Issues = "https://github.com/Logan-J-Snyder/BANSHEE/issues"
+
+[tool.setuptools]
+py-modules = ["BANSHEE_Lite_Chi", "banshee_cli"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

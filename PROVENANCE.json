@@ -1,0 +1,28 @@
+{
+  "packaged_on": "2026-10-20",
+  "implementation": "BANSHEE_Lite_Chi.py",
+  "source_sha256": "c0ef5b973747ab3fd461d8bda1fefe3eee199cab6a389f6431fc0525337cf0ac",
+  "repository_code_sha256": "bd35517cacf67f55ab92fc64f37163017f3e0454dc5b6628f21338a786f5dd9d",
+  "working_source_modified": false,
+  "repository_copy_changes": [
+    "Correct module-docstring example filenames and use four workers in the example.",
+    "Replace owner-specific server default paths with current-user home paths.",
+    "Rename the plotted template label to Tovar Mendoza."
+  ],
+  "scientific_functions_changed": false,
+  "ast_check": {
+    "top_level_function_and_class_definitions": 92,
+    "identical_definitions": 90,
+    "only_changed_definitions": ["save_plots", "server_main"],
+    "scope": "Plot legend text and server path defaults only; top-level module docstring also updated."
+  },
+  "local_validation": {
+    "python": "3.13",
+    "environment": "Local virtual environment sharing preinstalled site packages; editable installation tested without dependency downloads.",
+    "tests": "18 passed; one optional Lightkurve/oktopus warning.",
+    "command_wrapper": "Ordinary and server --help succeeded.",
+    "demo": "Documented synthetic normalized-input CLI completed with plots; 1 accepted, parameter-usable event.",
+    "limits": "Not a clean-room dependency-resolution test, a real-data benchmark, a validated uncertainty calibration, or proof of survey completeness."
+  },
+  "data_policy": "No real light curves, stellar catalogues, access tokens, or server configuration included. Demo figure is synthetic."
+}
