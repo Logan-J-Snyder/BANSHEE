@@ -13,5 +13,7 @@ data before posting. A small synthetic reproducer is better than a full catalogu
 
 Do not commit FITS, catalogues, credentials, large validation outputs, or private
 server settings. Passing a matching-template test does not establish real-data
-performance. No license is selected yet; discuss reuse/contribution terms with
-the maintainer before substantial contributions.
+performance. This project is all rights reserved; obtain permission and discuss
+reuse/contribution terms with Logan Snyder before using the code or making
+substantial contributions. See [LICENSE](LICENSE). Submitting a contribution
+does not automatically transfer its copyright to the maintainer.

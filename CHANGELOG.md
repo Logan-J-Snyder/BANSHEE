@@ -1,5 +1,12 @@
 # Changelog
 
+## Rights Notice - 2026-10-20
+
+- Add an all-rights-reserved notice credited to Logan Snyder, as requested.
+- Require prior written permission, subject to the exceptions in LICENSE;
+  preserve third-party terms and update documentation/package metadata.
+- No scientific implementation or fitting behavior changed.
+
 ## 0.1.0.dev0 - 2026-10-20
 
 - Package the existing Lite Chi implementation with installation metadata,

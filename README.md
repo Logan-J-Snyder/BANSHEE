@@ -175,5 +175,9 @@ These sources do not independently validate our implementation, thresholds, or
 usability flags. See [method and references](docs/method.md).
 
 Use GitHub's **Cite this repository** metadata for the software, and cite the
-relevant method papers separately. No software license has yet been selected;
-public visibility alone is not a permissive reuse license.
+relevant method papers separately.
+
+**Copyright (c) 2026 Logan Snyder. All rights reserved.** This is not an
+open-source license: use and reuse require prior written permission, subject to
+the exceptions in [LICENSE](LICENSE). Installation instructions and examples are
+provided for authorized users. Third-party dependencies retain their own terms.

@@ -1,4 +1,4 @@
-include README.md CHANGELOG.md CONTRIBUTING.md CITATION.cff PROVENANCE.json
+include README.md CHANGELOG.md CONTRIBUTING.md CITATION.cff PROVENANCE.json LICENSE
 include requirements*.txt
 recursive-include docs *.md *.png
 recursive-include examples *.py
