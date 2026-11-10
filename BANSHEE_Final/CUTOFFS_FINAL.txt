@@ -1,0 +1,97 @@
+BANSHEE Final -- frozen production cutoffs
+Release 2026.11.10.cutoffs1; November 10, 2026
+
+Applies to default scientific settings and the exact SAP_FLUX groups below.
+Numbers shown to six decimal places; the code retains full precision.
+
+Cadence Product Exposure    Ordinary lnBF   High-SNR lnBF  Status
+  20 s  SPOC      19.80 s     4.172180        1.386294     validated
+ 120 s  SPOC     118.80 s     1.422173        2.878134     validated
+ 200 s  QLP      200.00 s     1.386294        1.386294     validated
+ 600 s  QLP      600.00 s     1.386294        1.386294     validated
+1800 s  QLP     1800.00 s     1.386294        1.386294     validated
+
+High-SNR means FITTED, exposure-averaged peak SNR >=8. The ordinary cut applies
+below 8. Local three-sigma and all other eligibility/morphology gates still apply.
+Use detection_log_bayes_factor, the flare-versus-alternative-mixture score.
+The separate log_bayes_factor column is flare versus background alone.
+ln(4) = 1.3862943611198906 is the existing minimum mixture threshold.
+
+WHAT WAS FINALIZED
+
+No numerical cutoff changed. The 20s, 120s and 200s results are retained from
+the November 9 calibration. Fresh fixed-size confirmation trials checked the
+existing 600s and 1800s ln(4) cuts using BANSHEE_Final's frozen scientific code.
+The 600s test now uses the same pre-injection transient-screening rule as the
+other groups. All five groups pass their stated calibration checks.
+
+The new 1800s result permits otherwise-passing events to be accepted. It does
+not override morphology, edge-only follow-up, missing-stream validation or
+parameter-quality decisions. Old output folders must not be resumed with this
+changed version. Previously saved results are not automatically reclassified.
+
+FIXED CONFIRMATION DESIGN
+
+3,064 trials completed; zero failures. Per cadence (600s and 1800s):
+- 1,152 controls: 192 each of quiet, impulse, step, reversed flare,
+  symmetric bump and correlated noise.
+- 300 natural-duration flare draws: 10 per sampled peak SNR 1 through 30.
+- 80 separately reported long-flare challenges: 20 each at SNR 10, 15, 20 and 30.
+
+Natural FWHM draws use the saved catalog-based 10-110 minute distribution;
+long challenges use its >=45 minute subset. Three exposure-integrated Tovar
+rise shapes are used. These are model-family injections, not a complete
+empirical joint amplitude/duration/occurrence-rate model.
+
+Both cutoffs and all jobs were frozen before outcomes. No cut was fitted to
+these confirmation results. Every planned trial was retained; no additional
+draws were added to obtain a pass. All placements were possible on their
+initially assigned sources. Full 24-hour scored windows and substantial model
+wings avoid the whole-curve and gap-segment 5% margins.
+
+The run reused three 600s and four 1800s holdout background stars. Their random
+injections/placements are fresh; the stars are not new or fully independent
+of detector development. The previous failed 1800s check (12/384; 95% upper
+bound 5.014%) is retained in the embedded history. It was not erased or pooled
+with the new data to report the new bound.
+
+RESULTS
+
+Cadence   False windows    Observed false rate   Nominal one-sided 95% upper
+  20 s       1/384               0.260%                    1.229%
+ 120 s       4/384               1.042%                    2.368%
+ 200 s       6/384               1.563%                    3.061%
+ 600 s       8/1152              0.694%                    1.250%
+1800 s      24/1152              2.083%                    2.917%
+
+The requirement is an upper bound <=5%, zero failed trials, at least five
+strong resolved injections and >=70% recovery of that subset.
+Strong resolved means injected sampled peak SNR >=10 and FWHM >=1.5 exposures.
+
+600s: 187/191 strong resolved injections recovered (97.9%).
+      Natural sweep subset: 110/111; separate long challenge: 77/80.
+1800s: 79/94 strong resolved injections recovered (84.0%).
+       Natural sweep subset: 13/14; separate long challenge: 66/80.
+
+Across ALL SNR 1-30 natural-duration flare draws, recovery was 246/300 at 600s
+and 178/300 at 1800s. These include low-SNR and unresolved flares; the strong
+resolved percentages must not be substituted for this overall recovery.
+Follow-up-only control windows: 28/1152 at 600s and 6/1152 at 1800s.
+
+Control-kind accepted windows, each out of 192:
+                       quiet impulse step reverse symmetric correlated
+ 600s                    0      2     0      0        3          3
+1800s                    0      6     2      2       14          0
+
+INTERPRETATION
+
+The 5% target describes at least one accepted event per screened 24-hour
+control window under the equal-weight simulated control mixture. It is not
+5% catalog contamination, a per-sector rate, or a separate bound for every
+artifact kind. For example, 14/192 symmetric-bump controls passed at 1800s.
+Overlapping windows and reused stars limit the interpretation of nominal
+binomial intervals. These cuts are finalized for this release and tested
+protocol, not guaranteed optimal for every stellar population or flux stream.
+
+The plot and CUTOFFS_FINAL.json provide a compact portable record. The code
+retains the full-precision cuts, prior 1800s result, and protocol/report hashes.

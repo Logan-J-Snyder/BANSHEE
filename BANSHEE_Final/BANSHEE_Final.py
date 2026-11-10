@@ -2512,18 +2512,18 @@ from concurrent.futures import wait, FIRST_COMPLETED
 from importlib.metadata import version, PackageNotFoundError
 from scipy.stats import beta as beta_distribution
 
-DETECTOR_VERSION = "2026.11.09.share1"
+DETECTOR_VERSION = "2026.11.10.cutoffs1"
 
 # Saved SAP calibration. The fit/morphology engine is unchanged from the source
 # revision below. No file, network request, or new injection run is needed.
-BUILTIN_CALIBRATION = {'calibration_id': 'SAP_20261109',
+BUILTIN_CALIBRATION = {'calibration_id': 'SAP_20261110_fixed_confirmation',
  'source_detector_version': '2026.11.03.8',
  'source_code_sha256': '67a1edfc7a21f3bfd6352327f6c51c067596e65d951781cd7018eb6886c4b9fa',
  'source_calibration_sha256': '144aec1ab768409895784507ad14cce46a13f296a2321b0a7c73123ed8a2c3f2',
  'false_alarm_target': 0.05,
  'confidence': 0.95,
- 'target_unit': 'See group_provenance: 20s, 120s, 200s and 1800s use screened controls; 600s '
-                'retains its prior control protocol',
+ 'target_unit': 'At least one accepted event per transient-screened 24h window under an equal-weight '
+                'six-control mixture.',
  'analysis_signature': {'already_detrended': False,
                         'amplitude_prior_scales': [0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0],
                         'broad_fwhm_points': 41,
@@ -2567,33 +2567,62 @@ BUILTIN_CALIBRATION = {'calibration_id': 'SAP_20261109',
                         'sigma_clip': 3.0,
                         'sigma_clip_iterations': 10,
                         'symmetric_margin': 0.0},
- 'groups': {'QLP|SAP_FLUX|cadence=1800s|exposure=1800.00s': {'status': 'validation_failed',
+ 'groups': {'QLP|SAP_FLUX|cadence=1800s|exposure=1800.00s': {'status': 'validated',
                                                              'logbf_threshold': 1.3862943611198906,
                                                              'high_snr_logbf_threshold': 1.3862943611198906,
                                                              'high_snr_boundary': 8.0,
-                                                             'reasons': ['holdout_false_alarm_bound_exceeds_target'],
-                                                             'holdout_false_alarm_upper_95': 0.05014067956474021,
-                                                             'provenance': {'date': '2026-11-09',
-                                                                            'file': 'calibration_rechecked.json',
-                                                                            'sha256': 'd783ebf99606bc06917dbfe54985252c6e7f7f90ffb8b3dd5f82e11be3db83f1',
-                                                                            'target_unit': 'Probability '
-                                                                                           'of at '
-                                                                                           'least '
-                                                                                           'one '
-                                                                                           'accepted '
-                                                                                           'event '
+                                                             'reasons': [],
+                                                             'holdout_false_alarm_upper_95': 0.02917468853118814,
+                                                             'confirmation': {'control_false_windows': 24,
+                                                                              'control_windows': 1152,
+                                                                              'resolved_recovered': 79,
+                                                                              'resolved_injected': 94,
+                                                                              'background_stars': 4},
+                                                             'previous_validation': {'status': 'validation_failed',
+                                                                                     'logbf_threshold': 1.3862943611198906,
+                                                                                     'high_snr_logbf_threshold': 1.3862943611198906,
+                                                                                     'high_snr_boundary': 8.0,
+                                                                                     'reasons': ['holdout_false_alarm_bound_exceeds_target'],
+                                                                                     'holdout_false_alarm_upper_95': 0.05014067956474021,
+                                                                                     'provenance': {'date': '2026-11-09',
+                                                                                                    'file': 'calibration_rechecked.json',
+                                                                                                    'sha256': 'd783ebf99606bc06917dbfe54985252c6e7f7f90ffb8b3dd5f82e11be3db83f1',
+                                                                                                    'target_unit': 'Probability '
+                                                                                                                   'of '
+                                                                                                                   'at '
+                                                                                                                   'least '
+                                                                                                                   'one '
+                                                                                                                   'accepted '
+                                                                                                                   'event '
+                                                                                                                   'per '
+                                                                                                                   '24h '
+                                                                                                                   'pre-injection '
+                                                                                                                   'transient-screened '
+                                                                                                                   'background '
+                                                                                                                   'window '
+                                                                                                                   'under '
+                                                                                                                   'the '
+                                                                                                                   'equal-weight '
+                                                                                                                   'simulated '
+                                                                                                                   'control '
+                                                                                                                   'mixture'}},
+                                                             'provenance': {'date': '2026-11-10',
+                                                                            'file': 'calibration_confirmation.json',
+                                                                            'sha256': '326a75e75d54d42bcebba9205eb602e1ff44e51196a95f70f1ba4c62c8b5e24f',
+                                                                            'target_unit': 'At least one '
+                                                                                           'accepted event '
                                                                                            'per '
-                                                                                           '24h '
-                                                                                           'pre-injection '
                                                                                            'transient-screened '
-                                                                                           'background '
-                                                                                           'window '
-                                                                                           'under '
-                                                                                           'the '
+                                                                                           '24h window '
+                                                                                           'under an '
                                                                                            'equal-weight '
-                                                                                           'simulated '
-                                                                                           'control '
-                                                                                           'mixture'}},
+                                                                                           'six-control '
+                                                                                           'mixture.',
+                                                                            'method': 'Frozen cuts; '
+                                                                                      'fixed-size fresh '
+                                                                                      'random trials on '
+                                                                                      'reused holdout '
+                                                                                      'backgrounds.'}},
             'QLP|SAP_FLUX|cadence=200s|exposure=200.00s': {'status': 'validated',
                                                            'logbf_threshold': 1.3862943611198906,
                                                            'high_snr_logbf_threshold': 1.3862943611198906,
@@ -2603,19 +2632,14 @@ BUILTIN_CALIBRATION = {'calibration_id': 'SAP_20261109',
                                                            'provenance': {'date': '2026-11-09',
                                                                           'file': 'calibration_200s.json',
                                                                           'sha256': '4591e39fe6f6df596b0b93fe9174124e570a1fdc0a5169ccd1dc6f6f309a393d',
-                                                                          'target_unit': 'Probability '
-                                                                                         'of at '
-                                                                                         'least '
-                                                                                         'one '
-                                                                                         'accepted '
-                                                                                         'event '
+                                                                          'target_unit': 'Probability of '
+                                                                                         'at least one '
+                                                                                         'accepted event '
                                                                                          'per 24h '
                                                                                          'pre-injection '
                                                                                          'transient-screened '
                                                                                          'background '
-                                                                                         'window '
-                                                                                         'under '
-                                                                                         'the '
+                                                                                         'window under the '
                                                                                          'equal-weight '
                                                                                          'simulated '
                                                                                          'control '
@@ -2625,26 +2649,55 @@ BUILTIN_CALIBRATION = {'calibration_id': 'SAP_20261109',
                                                            'high_snr_logbf_threshold': 1.3862943611198906,
                                                            'high_snr_boundary': 8.0,
                                                            'reasons': [],
-                                                           'holdout_false_alarm_upper_95': 0.03072367683353283,
-                                                           'provenance': {'date': '2026-11-08',
-                                                                          'file': 'calibration_previous_20261108.json',
-                                                                          'sha256': '18950f61c999c80a7fafb6b603d4a1d4338322ed13b82a729b7b234e5c569603',
-                                                                          'target_unit': 'Probability '
-                                                                                         'of at '
-                                                                                         'least '
-                                                                                         'one '
-                                                                                         'accepted '
-                                                                                         'event '
-                                                                                         'per 24h '
-                                                                                         'quiet-background '
-                                                                                         'control '
-                                                                                         'window '
-                                                                                         'under '
-                                                                                         'the '
-                                                                                         'balanced '
-                                                                                         'simulated '
-                                                                                         'control '
-                                                                                         'mixture'}},
+                                                           'holdout_false_alarm_upper_95': 0.012495094273056744,
+                                                           'confirmation': {'control_false_windows': 8,
+                                                                            'control_windows': 1152,
+                                                                            'resolved_recovered': 187,
+                                                                            'resolved_injected': 191,
+                                                                            'background_stars': 3},
+                                                           'previous_validation': {'status': 'validated',
+                                                                                   'logbf_threshold': 1.3862943611198906,
+                                                                                   'high_snr_logbf_threshold': 1.3862943611198906,
+                                                                                   'high_snr_boundary': 8.0,
+                                                                                   'reasons': [],
+                                                                                   'holdout_false_alarm_upper_95': 0.03072367683353283,
+                                                                                   'provenance': {'date': '2026-11-08',
+                                                                                                  'file': 'calibration_previous_20261108.json',
+                                                                                                  'sha256': '18950f61c999c80a7fafb6b603d4a1d4338322ed13b82a729b7b234e5c569603',
+                                                                                                  'target_unit': 'Probability '
+                                                                                                                 'of '
+                                                                                                                 'at '
+                                                                                                                 'least '
+                                                                                                                 'one '
+                                                                                                                 'accepted '
+                                                                                                                 'event '
+                                                                                                                 'per '
+                                                                                                                 '24h '
+                                                                                                                 'quiet-background '
+                                                                                                                 'control '
+                                                                                                                 'window '
+                                                                                                                 'under '
+                                                                                                                 'the '
+                                                                                                                 'balanced '
+                                                                                                                 'simulated '
+                                                                                                                 'control '
+                                                                                                                 'mixture'}},
+                                                           'provenance': {'date': '2026-11-10',
+                                                                          'file': 'calibration_confirmation.json',
+                                                                          'sha256': '326a75e75d54d42bcebba9205eb602e1ff44e51196a95f70f1ba4c62c8b5e24f',
+                                                                          'target_unit': 'At least one '
+                                                                                         'accepted event '
+                                                                                         'per '
+                                                                                         'transient-screened '
+                                                                                         '24h window under '
+                                                                                         'an equal-weight '
+                                                                                         'six-control '
+                                                                                         'mixture.',
+                                                                          'method': 'Frozen cuts; '
+                                                                                    'fixed-size fresh '
+                                                                                    'random trials on '
+                                                                                    'reused holdout '
+                                                                                    'backgrounds.'}},
             'SPOC|SAP_FLUX|cadence=120s|exposure=118.80s': {'status': 'validated',
                                                             'logbf_threshold': 1.4221729029775079,
                                                             'high_snr_logbf_threshold': 2.8781335878400403,
@@ -2654,18 +2707,14 @@ BUILTIN_CALIBRATION = {'calibration_id': 'SAP_20261109',
                                                             'provenance': {'date': '2026-11-09',
                                                                            'file': 'calibration_rechecked.json',
                                                                            'sha256': 'd783ebf99606bc06917dbfe54985252c6e7f7f90ffb8b3dd5f82e11be3db83f1',
-                                                                           'target_unit': 'Probability '
-                                                                                          'of at '
-                                                                                          'least '
-                                                                                          'one '
-                                                                                          'accepted '
-                                                                                          'event '
+                                                                           'target_unit': 'Probability of '
+                                                                                          'at least one '
+                                                                                          'accepted event '
                                                                                           'per 24h '
                                                                                           'pre-injection '
                                                                                           'transient-screened '
                                                                                           'background '
-                                                                                          'window '
-                                                                                          'under '
+                                                                                          'window under '
                                                                                           'the '
                                                                                           'equal-weight '
                                                                                           'simulated '
@@ -2680,46 +2729,54 @@ BUILTIN_CALIBRATION = {'calibration_id': 'SAP_20261109',
                                                           'provenance': {'date': '2026-11-09',
                                                                          'file': 'calibration_rechecked.json',
                                                                          'sha256': 'd783ebf99606bc06917dbfe54985252c6e7f7f90ffb8b3dd5f82e11be3db83f1',
-                                                                         'target_unit': 'Probability '
-                                                                                        'of at '
+                                                                         'target_unit': 'Probability of at '
                                                                                         'least one '
-                                                                                        'accepted '
-                                                                                        'event per '
-                                                                                        '24h '
+                                                                                        'accepted event '
+                                                                                        'per 24h '
                                                                                         'pre-injection '
                                                                                         'transient-screened '
-                                                                                        'background '
-                                                                                        'window '
+                                                                                        'background window '
                                                                                         'under the '
                                                                                         'equal-weight '
-                                                                                        'simulated '
-                                                                                        'control '
+                                                                                        'simulated control '
                                                                                         'mixture'}}},
  'caveats': ['Small local background sample; sources were used during detector development',
-             'New injected signals and star-disjoint threshold selection/checking, not external '
-             'population validation',
+             'New injected signals and star-disjoint threshold selection/checking, not external population '
+             'validation',
              'Conditional binomial bounds treat randomized trials as draws from this finite '
              'background/control mixture',
              'No claim about survey catalog contamination or flare occurrence distribution',
-             'Only events seeded inside the scored 24h window are fit; full original LC is '
-             'detrended and all seeds enter neighbor masks',
+             'Only events seeded inside the scored 24h window are fit; full original LC is detrended and '
+             'all seeds enter neighbor masks',
              'Parents seeded outside the scored window are not tail-associated',
              'Placement failures stay recorded and prevent a validated label; no replacement draws',
              'The nominal binomial bounds treat windows as independent draws from the declared '
-             'equal-weight control mixture. Reused stars/windows can introduce dependence; the '
-             'bounds do not establish a survey-wide rate or a separate 5% bound for each artifact '
-             'type.',
-             'Holdout uses four source stars absent from the November 8 200-second calibration; '
-             'three of the four stars appeared in its 20-second group; these sources were used in '
-             'earlier detector development, so this is not external population validation',
-             'Window selection removes pre-existing positive AND negative coherent excursions '
-             'independent of detector fits; rates apply only to this screened background '
-             'population',
-             '20s retains the prior 1-training/2-holdout-star split because only three local 20s '
-             'sources are available; the stars and windows are reused. 120s uses six training and '
-             'five held-out stars; 1800s uses six training and four held-out stars. Those held-out '
-             'stars are not in their prior cadence-specific calibration. Other-cadence and prior '
-             'detector-development reuse remains; no external population validation']}
+             'equal-weight control mixture. Reused stars/windows can introduce dependence; the bounds do '
+             'not establish a survey-wide rate or a separate 5% bound for each artifact type.',
+             'Holdout uses four source stars absent from the November 8 200-second calibration; three of '
+             'the four stars appeared in its 20-second group; these sources were used in earlier detector '
+             'development, so this is not external population validation',
+             'Window selection removes pre-existing positive AND negative coherent excursions independent '
+             'of detector fits; rates apply only to this screened background population',
+             '20s retains the prior 1-training/2-holdout-star split because only three local 20s sources '
+             'are available; the stars and windows are reused. 120s uses six training and five held-out '
+             'stars; 1800s uses six training and four held-out stars. Those held-out stars are not in '
+             'their prior cadence-specific calibration. Other-cadence and prior detector-development reuse '
+             'remains; no external population validation',
+             'Fresh random trials on reused finite backgrounds; not new independent stars or survey '
+             'validation.',
+             'Old failed 1800s confirmation remains part of history; new bound uses new trials only, '
+             'without pooling.',
+             'Background windows overlap. Binomial intervals are nominal conditional summaries, not '
+             'population guarantees.',
+             'Control mixture is simulated and equal-weighted, not an empirical occurrence distribution.',
+             'Cuts may pass the mixture while particular artifact kinds have higher error rates.',
+             '20s, 120s and 200s retain their existing exact cuts and documented validation limitations.'],
+ 'confirmation_engine_sha256': '581a9932f566bf9a497193335e46edcb9c20bce181da97737280f0ad8459b6a2',
+ 'confirmation_engine_version': '2026.11.09.share1',
+ 'confirmation_sha256': '326a75e75d54d42bcebba9205eb602e1ff44e51196a95f70f1ba4c62c8b5e24f',
+ 'confirmation_protocol_sha256': '80651a4ee8b31a3bfda61680e41e633636e747cc398c73c31f11191babddb512',
+ 'cutoffs_frozen_sha256': '403ede184e94aa5fa20856774e92cf4635067b1202ab335836229e3118635311'}
 
 
 SAMPLES = ("open_clusters", "field_stars")

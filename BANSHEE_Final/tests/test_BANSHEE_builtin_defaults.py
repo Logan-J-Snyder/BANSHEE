@@ -19,7 +19,8 @@ class BuiltinDefaultsTests(unittest.TestCase):
         groups=[(20,19.8,'SPOC',4.1721795720870976,1.3862943611198906),
                 (120,118.8,'SPOC',1.4221729029775079,2.8781335878400403),
                 (200,200.,'QLP',1.3862943611198906,1.3862943611198906),
-                (600,600.,'QLP',1.3862943611198906,1.3862943611198906)]
+                (600,600.,'QLP',1.3862943611198906,1.3862943611198906),
+                (1800,1800.,'QLP',1.3862943611198906,1.3862943611198906)]
         for cadence,exposure,mission,ordinary,high in groups:
             with self.subTest(cadence=cadence):
                 got,status=b.calibrated_config(self.lc(cadence,exposure,mission),b.Config())
@@ -28,8 +29,6 @@ class BuiltinDefaultsTests(unittest.TestCase):
                 self.assertEqual(got.high_snr_logbf_threshold,high)
                 self.assertEqual(b.operating_threshold({'fitted_peak_snr':7.99},got),ordinary)
                 self.assertEqual(b.operating_threshold({'fitted_peak_snr':8.},got),high)
-        _,status=b.calibrated_config(self.lc(1800,1800,'QLP'),b.Config())
-        self.assertEqual(status,'validation_failed')
 
     def test_automatic_and_explicit_sap_match(self):
         for config in (b.Config(),b.Config(flux_column='SAP_FLUX')):
@@ -79,14 +78,18 @@ class BuiltinDefaultsTests(unittest.TestCase):
         for cfg in (b.Config(builtin_calibration=False),b.Config(allow_uncalibrated=True)):
             self.assertEqual(b.calibrated_config(self.lc(),cfg)[1],'missing')
 
-    def test_1800s_otherwise_accepted_event_routes_to_followup(self):
+    def test_failed_calibration_still_routes_to_followup(self):
         lc=self.lc(1800,1800,'QLP')
         candidate=b.Candidate(np.array([50]),np.arange(49,54),50,0)
         prepared=type('Prepared',(),dict(lightcurve=lc,detrend_edge_mask=np.zeros(100,bool),
                                         background_uncertain_mask=np.zeros(100,bool)))()
         row=dict(tier='accepted',reason='',seed_time=lc.time[50],tpeak=lc.time[50],
                  fitted_peak_snr=20,logbf_flare_vs_alternatives=50,parameter_usable=True)
-        with patch.object(b,'prepare',return_value=(prepared,{})), \
+        from copy import deepcopy
+        failed=deepcopy(b.BUILTIN_CALIBRATION)
+        failed['groups'][b.calibration_group(lc)]['status']='validation_failed'
+        with patch.object(b,'BUILTIN_CALIBRATION',failed), \
+             patch.object(b,'prepare',return_value=(prepared,{})), \
              patch.object(b,'find_candidates',return_value=[candidate]), \
              patch.object(b,'_fit_one',return_value=(row,None)):
             frame,_,_,_=b.analyze(lc,b.Config())

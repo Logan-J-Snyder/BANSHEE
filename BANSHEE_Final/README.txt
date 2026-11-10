@@ -1,13 +1,13 @@
 BANSHEE FINAL
-Release: 2026.11.09.share1
+Release: 2026.11.10.cutoffs1
 
 Local stellar-flare screening for TESS light curves. The standalone detector is
 BANSHEE_Final.py. It reads FITS, CSV or Parquet light curves and writes accepted,
 follow-up and rejected candidate tables. The optional precheck reports changing
 noise and unusual features without changing detection decisions.
 
-This is a portable distribution of the November 9 detector, with the same
-scientific settings and embedded SAP calibration. "Final" names this release;
+This preserves the November 9 scientific functions and numerical SAP cuts,
+with the November 10 fixed-cut confirmation recorded in the embedded calibration. "Final" names this release;
 it is not a claim of perfect completeness or zero false detections.
 
 1. INSTALL ONCE
@@ -34,7 +34,7 @@ server. It can run offline after dependencies have been installed.
 The example generator creates five artificial SAP light curves, one per cadence,
 with known injected flares. IDs are synthetic placeholders, not catalog targets.
 This demonstrates file loading, fitting and exports; it is not a completeness
-measurement. The 1800-second example remains unvalidated follow-up by design.
+measurement. The 1800-second example now uses the confirmed default SAP calibration.
 
 3. RUN YOUR LIGHT CURVES
 
@@ -119,7 +119,7 @@ Cadence  Product Exposure  Ordinary lnBF  High-SNR lnBF  Saved status
  120 s   SPOC    118.80 s    1.422173       2.878134     validated
  200 s   QLP     200.00 s    1.386294       1.386294     validated
  600 s   QLP     600.00 s    1.386294       1.386294     validated
-1800 s   QLP    1800.00 s    1.386294       1.386294     validation failed
+1800 s   QLP    1800.00 s    1.386294       1.386294     validated
 
 High-SNR means fitted, exposure-averaged peak SNR >= 8, not injected truth.
 These cuts apply to detection_log_bayes_factor with detection_statistic set to
@@ -129,8 +129,10 @@ flare against the affine background and is NOT the default operating score.
 Raw-flux checks, morphology, local three-sigma criteria and other eligibility
 checks still apply; passing one lnBF cut alone does not establish acceptance.
 
-The saved 1800-second calibration failed its 95% upper false-alarm bound
-(5.014% versus a 5% target). Otherwise passing events remain follow-up.
+The November 10 confirmation passed at the unchanged 600s and 1800s cuts.
+The nominal 95% upper false-window bounds were 1.250% (8/1152) and 2.917%
+(24/1152), respectively. Otherwise passing 1800s events can now be accepted.
+The prior 1800s failed check is retained in the calibration history.
 Other products, exposures, flux streams and changed scientific settings also
 do not inherit SAP validation. Inspect calibration_status and calibration_group.
 
@@ -214,7 +216,7 @@ classifications. The precheck does not mask data or automatically reject flares.
 See VALIDATION.txt for the checks actually run for this release, and
 CHANGES_SINCE_LITE_CHI.txt for the detailed comparison. RELEASE_MANIFEST.json
 records file hashes, dependency versions and the compared source hashes.
-No new population-level injection calibration was performed for this rename.
+See CUTOFFS_FINAL.txt/JSON for the fixed-cut confirmation and its scope.
 
 Method references retained in the source:
   Pitkin et al. (2014), https://doi.org/10.1093/mnras/stu1889

@@ -1,0 +1,79 @@
+{
+  "version": "2026.11.10.cutoffs1",
+  "date": "2026-11-10",
+  "high_snr_boundary": 8.0,
+  "target_unit": "At least one accepted event per transient-screened 24h window under an equal-weight six-control mixture.",
+  "confidence": 0.95,
+  "false_alarm_target": 0.05,
+  "numerical_cutoffs_changed": false,
+  "scientific_functions_changed": false,
+  "new_confirmation_trials": 3064,
+  "new_confirmation_failures": 0,
+  "protocol_sha256": "80651a4ee8b31a3bfda61680e41e633636e747cc398c73c31f11191babddb512",
+  "full_confirmation_sha256": "326a75e75d54d42bcebba9205eb602e1ff44e51196a95f70f1ba4c62c8b5e24f",
+  "groups": {
+    "QLP|SAP_FLUX|cadence=1800s|exposure=1800.00s": {
+      "status": "validated",
+      "ordinary_lnBF": 1.3862943611198906,
+      "high_SNR_lnBF": 1.3862943611198906,
+      "control_false_windows": 24,
+      "control_windows": 1152,
+      "false_upper_95": 0.02917468853118814,
+      "resolved_recovered": 79,
+      "resolved_injected": 94,
+      "fresh_confirmation": true
+    },
+    "QLP|SAP_FLUX|cadence=200s|exposure=200.00s": {
+      "status": "validated",
+      "ordinary_lnBF": 1.3862943611198906,
+      "high_SNR_lnBF": 1.3862943611198906,
+      "control_false_windows": 6,
+      "control_windows": 384,
+      "false_upper_95": 0.030605341336622634,
+      "resolved_recovered": 216,
+      "resolved_injected": 218,
+      "fresh_confirmation": false
+    },
+    "QLP|SAP_FLUX|cadence=600s|exposure=600.00s": {
+      "status": "validated",
+      "ordinary_lnBF": 1.3862943611198906,
+      "high_SNR_lnBF": 1.3862943611198906,
+      "control_false_windows": 8,
+      "control_windows": 1152,
+      "false_upper_95": 0.012495094273056744,
+      "resolved_recovered": 187,
+      "resolved_injected": 191,
+      "fresh_confirmation": true
+    },
+    "SPOC|SAP_FLUX|cadence=120s|exposure=118.80s": {
+      "status": "validated",
+      "ordinary_lnBF": 1.4221729029775079,
+      "high_SNR_lnBF": 2.8781335878400403,
+      "control_false_windows": 4,
+      "control_windows": 384,
+      "false_upper_95": 0.023677685118057887,
+      "resolved_recovered": 215,
+      "resolved_injected": 218,
+      "fresh_confirmation": false
+    },
+    "SPOC|SAP_FLUX|cadence=20s|exposure=19.80s": {
+      "status": "validated",
+      "ordinary_lnBF": 4.1721795720870976,
+      "high_SNR_lnBF": 1.3862943611198906,
+      "control_false_windows": 1,
+      "control_windows": 384,
+      "false_upper_95": 0.012293754345837998,
+      "resolved_recovered": 218,
+      "resolved_injected": 218,
+      "fresh_confirmation": false
+    }
+  },
+  "caveats": [
+    "Fresh random trials on reused finite backgrounds; not new independent stars or survey validation.",
+    "Old failed 1800s confirmation remains part of history; new bound uses new trials only, without pooling.",
+    "Background windows overlap. Binomial intervals are nominal conditional summaries, not population guarantees.",
+    "Control mixture is simulated and equal-weighted, not an empirical occurrence distribution.",
+    "Cuts may pass the mixture while particular artifact kinds have higher error rates.",
+    "20s, 120s and 200s retain their existing exact cuts and documented validation limitations."
+  ]
+}

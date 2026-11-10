@@ -1,5 +1,18 @@
 # Changelog
 
+## BANSHEE Final 2026.11.10.cutoffs1 - 2026-11-10
+
+- Finalize the existing numerical cadence/SNR cuts without retuning them.
+- Record a predeclared 3,064-trial confirmation at 600s and 1800s, with no failed
+  trials. Upper false-window bounds are 1.25% and 2.92%, respectively.
+- Update 1800s calibration status to validated, allowing otherwise-passing
+  candidates to be accepted. Preserve the previous failed check in the history.
+- Include the cutoff table, plot, control-kind counts, uncertainty, protocol
+  hashes and limitations of reused finite backgrounds. The 5% target is for
+  the tested control mixture, not catalog contamination or every artifact type.
+- Preserve all scientific function definitions and the 20s/120s/200s calibration
+  records. Local validation: 89 tests and the five-cadence CLI example passed.
+
 ## BANSHEE Final 2026.11.09.share1 - 2026-11-09
 
 - Add the self-contained `BANSHEE_Final/` release with the standalone detector,

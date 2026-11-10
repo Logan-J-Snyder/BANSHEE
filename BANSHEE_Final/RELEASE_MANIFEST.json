@@ -1,18 +1,22 @@
 {
-  "release": "2026.11.09.share1",
+  "release": "2026.11.10.cutoffs1",
   "entry_point": "BANSHEE_Final.py",
   "files": {
-    "BANSHEE_Final.py": "581a9932f566bf9a497193335e46edcb9c20bce181da97737280f0ad8459b6a2",
+    "BANSHEE_Final.py": "382f4907a8de26626c98edc8a8317e16f9446d848199fca8de0813513a75f465",
     "BANSHEE_Final_With_Precheck.py": "4c713872588f71e623d88da7bca7bb9e093793ee51ef0805d20ba2290ad15cbb",
     "BANSHEE_Precheck.py": "ab96f479895d57f3595125d3dd395dfc98cf015a01b63ec88c26ce5c68ff137d",
-    "CHANGES_SINCE_LITE_CHI.txt": "129245a90b906aeebeb7438ccc1eed7f879af0bae6e792304f57e00dd033b73c",
-    "README.txt": "d399fd6fba7d31b43e1bffae6a3cee955f79eae47248a2f272ea47f170983931",
-    "VALIDATION.txt": "53275b1ea0e49d799f55b2cc81116fa8ba4a9dff44577014fe37c849914a0d39",
+    "CHANGES_SINCE_LITE_CHI.txt": "eaec3fe17f7745d30e1040e750f08e1a323df835f0c828c6ee3d2543efb0756b",
+    "CUTOFFS_FINAL.json": "9316bfe1481a3bed476b3f7bcad29582423d47de86bf7843f470daaf63007846",
+    "CUTOFFS_FINAL.png": "50eb9a13f7a5421fdc896bd5e241068469dfbacb2a2ee029424b11ad3fb3051c",
+    "CUTOFFS_FINAL.txt": "9b77787b18158ca2b737bcb8cead69030c8af0355586363124f411389f1f83e6",
+    "LICENSE": "069548415db19ad36d760a8e5bb40fa89cc8f1bd33d458aab27a5d68d64dc7be",
+    "README.txt": "4f3aba71767fe1c29120ac2ea6cb3526dd7cc69cc5352b2e7f8e35b633fa3e13",
+    "VALIDATION.txt": "08f70816917f15d943301a316d983e786a4392f96c62fe65a31894ba0efa63fa",
     "make_example_lightcurves.py": "2929d5a282db3aa9676d854e98942b1dacd52e832ca8e19ebb3149ee601b662a",
     "requirements.txt": "6a412911d9315cbb6db92e63f0665fc09bed4edd468d28b2aed30fc14ab83e0e",
     "tests/test_BANSHEE_Final.py": "3728ca831ed0db46e8ce1a2e8074d237d692b11b0800d33a866c8cebe338eb9d",
     "tests/test_BANSHEE_Precheck.py": "182112aba34e926662b4f6f4391451f4fb7d89ff9c42564f4cc006aa44fc418c",
-    "tests/test_BANSHEE_builtin_defaults.py": "92f1e7d471bec0f39bf1e8a16d95ddc803761901e06027736e990b55ff4d0821",
+    "tests/test_BANSHEE_builtin_defaults.py": "bedd0d7621a9249a8def57f3324a12364f2bcbb9d77a7615892ff88e97e223b2",
     "tests/test_BANSHEE_edge_review.py": "265fe316e756466be17652b8f599938ec3f9f079e0eb7af0564ac2502f898f4e",
     "tests/test_revision8.py": "ca4251f133ecfa62155d25892cb40c0d39d609d62f4e79a450d0d8a42eddb6f5"
   },
@@ -32,5 +36,10 @@
     "pyarrow": "21.0.0"
   },
   "scientific_definitions_unchanged_from_source": true,
-  "manifest_hash_scope": "All distributed files except this manifest; generated run outputs are excluded."
+  "manifest_hash_scope": "All distributed files except this manifest; generated run outputs are excluded.",
+  "previous_release": "2026.11.09.share1",
+  "previous_release_detector_sha256": "581a9932f566bf9a497193335e46edcb9c20bce181da97737280f0ad8459b6a2",
+  "numerical_cutoffs_changed": false,
+  "calibration_evidence_updated": true,
+  "confirmation_report_sha256": "326a75e75d54d42bcebba9205eb602e1ff44e51196a95f70f1ba4c62c8b5e24f"
 }

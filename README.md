@@ -4,12 +4,13 @@
 
 Stellar-flare detection and measurement for TESS light curves. The current
 standalone release is **[BANSHEE_Final.py](BANSHEE_Final/BANSHEE_Final.py)**,
-version **2026.11.09.share1**. It includes local-noise screening, flare-protected
+version **2026.11.10.cutoffs1**. It includes local-noise screening, flare-protected
 detrending, exposure-integrated flare models, and saved SAP calibration cuts.
 
 [Full run guide](BANSHEE_Final/README.txt) |
 [Changes since Lite_Chi](BANSHEE_Final/CHANGES_SINCE_LITE_CHI.txt) |
 [Validation](BANSHEE_Final/VALIDATION.txt) |
+[Final cadence cutoffs](BANSHEE_Final/CUTOFFS_FINAL.txt) |
 [Legacy Lite_Chi guide](README_LITE_CHI.md)
 
 ## Installation
@@ -52,10 +53,11 @@ Each FITS, CSV or Parquet input must represent one star, sector and flux stream.
 Keep inputs and outputs in separate, non-nested folders. Automatic loading
 prefers `SAP_FLUX`; add `--flux-column SAP_FLUX` to require it explicitly.
 
-No new calibration run is needed for matching built-in SAP settings. Current
-1800-second calibration remains **validation_failed**: otherwise passing events
-remain follow-up. Other streams, exposures or changed scientific settings do
-not automatically inherit validation. See the [run guide](BANSHEE_Final/README.txt)
+No new calibration run is needed for matching built-in SAP settings. All five
+default cadence groups passed their stated checks. The November 10 fixed-cut
+confirmation passed at 600s and 1800s with nominal 95% upper false-window bounds
+of 1.25% and 2.92%; otherwise passing 1800s events can now be accepted. Other
+streams, exposures or changed settings do not automatically inherit validation. See the [run guide](BANSHEE_Final/README.txt)
 for exact cuts, calibration scope, server-layout mode, tmux and resume instructions.
 
 ## Detection and Outputs
@@ -85,10 +87,14 @@ contamination guarantee for a survey flare catalog.
 
 ## Validation and History
 
-The portable release passed **89 local regression tests**. Its scientific
-results matched the preserved November 9 Perfected source exactly on five
-synthetic cadence examples, excluding runtime measurements. Resume, failure
-continuation, exports and the advisory wrapper were also checked.
+The updated release passed **89 local regression tests** and the five-cadence
+CLI example. Scientific functions and numerical cuts are unchanged; embedded
+calibration evidence and the 1800s validation status were updated. The fixed
+confirmation completed 3,064 planned trials with zero failures on reused local
+background stars. Earlier resume, failure-continuation and advisory-wrapper
+checks are documented in the November 9 release history.
+
+![Final cadence cutoffs and conditional false-window bounds](BANSHEE_Final/CUTOFFS_FINAL.png)
 
 From the `BANSHEE_Final` directory:
 

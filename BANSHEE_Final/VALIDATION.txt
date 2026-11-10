@@ -1,68 +1,46 @@
-BANSHEE_Final.py -- release checks
-Release: 2026.11.09.share1
-Checked locally on November 9, 2026, with macOS and Python 3.13.9.
-Dependency versions and source hashes are in RELEASE_MANIFEST.json.
+BANSHEE Final -- release validation
+Release 2026.11.10.cutoffs1; November 10, 2026
+Local environment: macOS, Python 3.13.9; pinned dependencies in requirements.txt.
 
-REGRESSION TESTS
+CALIBRATION CONFIRMATION
+3,064/3,064 predeclared trials completed, zero failures. The previously selected
+600s/1800s ordinary and high-SNR lnBF cuts were frozen at ln(4) before outcomes.
+All placements were available without source reassignment. Every planned trial
+was retained. No threshold was tuned or extra trial added after seeing outcomes.
+
+600s: 8/1152 false-positive windows; nominal one-sided 95% upper bound 1.250%.
+Strong resolved recovery: 187/191 (97.9%).
+1800s: 24/1152 false-positive windows; nominal upper bound 2.917%.
+Strong resolved recovery: 79/94 (84.0%).
+Both pass the predeclared <=5% upper-bound and >=70% recovery requirements.
+The old 1800s failure remains in the code's calibration history.
+
+The 20s, 120s and 200s numerical cuts and previous validation are unchanged.
+Independent binomial-CDF recomputation checked all five reported upper bounds.
+Report verification checked every trial identity/hash, source hash, exact
+preflight placement, injected SNR and searchable peak location.
+See CUTOFFS_FINAL.txt for control-kind counts and limits of these conditional
+checks, including reused background stars and separate long-flare challenges.
+
+CODE AND REGRESSION TESTS
+All scientific function/class definitions and Config defaults are identical to
+2026.11.09.share1. The version and embedded calibration data changed. Numerical
+lnBF cuts are identical. The 1800s status update now permits acceptance when
+all other detector checks pass. No raw light curve or older release was edited.
 
 Command: python -m unittest discover -s tests -v
-Result: 89 tests passed in 17.479 seconds in the local environment.
+Result: 89 tests passed in 22.772 seconds.
+The all-cadence default test now requires validated 1800s calibration; the
+failed-calibration regression explicitly supplies a failed group and verifies
+that its events still route to follow-up. No morphology assertions were relaxed.
 
-Coverage includes input IDs/flux/error/exposure handling, local noise changes,
-flare-protected detrending, shape-family evidence, artifact comparisons,
-calibration matching and operating cuts, edge-only follow-up routing, product
-exports, completion checks, and the optional advisory precheck.
+The five-cadence synthetic CLI completed with 5 successful light-curve products,
+0 failures, 5 accepted known injected flares and 1 rejected additional candidate.
+All five groups used their expected embedded cuts and validated status.
+CSV and Parquet retained exact source IDs. This installation demonstration is
+separate from the real-background confirmation and is not a completeness test.
 
-The tests were carried forward with imports changed to BANSHEE_Final. The
-precheck's historical frozen-code checksum assertion was updated to use the
-distributed release manifest. Scientific assertions were not loosened.
-
-SCIENTIFIC EQUIVALENCE TO THE PRESERVED PERFECTED SOURCE
-
-The compared source SHA-256 is:
-d1359c499e6c549ad04c893485c0f8c741f2be44bd3314c8e2b1442652f2bea5
-
-Every scientific function/class has the same parsed implementation. Only the
-CLI parser and main entrypoint differ, for the generic input default, --version
-and renamed output snapshot. Module documentation and release version also
-changed. Config defaults and embedded calibration data are identical.
-
-Both files analyzed the five artificial light curves created by
-make_example_lightcurves.py. Event tables, fitted arrays, prepared data and
-scientific diagnostics matched exactly at every cadence: 20, 120, 200, 600 and
-1800 seconds. Timing fields (chi2_fit_seconds, fit_seconds, detrend_seconds and
-total_seconds) were excluded because independent executions take different time.
-
-END-TO-END COMMAND-LINE CHECKS
-
-- Five FITS inputs, two worker processes, input/output paths containing spaces:
-  5 complete products, 0 failures; CSV, Parquet and PNG products were written.
-- All five known injected events were found: 4 accepted and 1 follow-up.
-  The 1800-second injection was follow-up because its saved calibration failed
-  validation. One additional candidate was rejected. These are installation
-  fixtures, not an efficiency or false-positive measurement.
-- CSV and Parquet retained the same exact Gaia identifier strings.
-- Repeating the identical command attempted 0 new analyses and retained all
-  5 complete products. All 82 checked product/manifest files remained identical;
-  the append-only run log and current-run summary were excluded from that check.
-- A separate batch containing one valid and one deliberately invalid FITS file
-  completed the usable light curve, recorded the invalid input, and returned
-  exit status 1 after preserving its successful results.
-- --help and --version worked from outside the package directory.
-- The optional precheck wrapper inspected all 5 inputs without precheck failures,
-  then completed all 5 flare analyses and wrote the renamed detector snapshot.
-  Its detection table matched the standalone run after resolving equivalent
-  input path spellings and excluding the two per-candidate runtime fields.
-
-PORTABILITY AND BOUNDARIES
-
-The distribution uses generic paths and contains no observed light curves,
-catalogs, personal account/host names, cached bytecode or local result logs.
-Its dependency pins, synthetic example generator, regression tests and release
-manifest accompany the standalone detector and optional precheck modules.
-
-This is local functional validation. No server was accessed. No fresh
-environment install, Linux/WSL run, full survey run, new calibration campaign,
-population-completeness study or new head-to-head Lite_Chi benchmark was done.
-The 1800-second calibration remains validation_failed, and unvalidated settings
-or streams retain the existing follow-up policy.
+The previous release's source-equivalence, resume, failure-continuation and
+advisory-precheck tests remain documented in the archived November 9 package.
+They were not all rerun for this calibration-only update. No server was accessed.
+No new dependency installation or independent survey-wide benchmark was run.

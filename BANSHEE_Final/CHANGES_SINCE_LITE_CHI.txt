@@ -1,5 +1,5 @@
 BANSHEE_Final.py versus BANSHEE_Lite_Chi.py
-Release 2026.11.09.share1 -- source comparison, not a new recovery benchmark
+Release 2026.11.10.cutoffs1 -- source comparison with fixed-cut confirmation
 
 EXACT COMPARISON
 
@@ -119,16 +119,18 @@ Cadence/product/exposure        Ordinary cut   High-SNR cut   Status
 120s SPOC / 118.80s               1.422173       2.878134      validated
 200s QLP / 200.00s               1.386294       1.386294      validated
 600s QLP / 600.00s               1.386294       1.386294      validated
-1800s QLP / 1800.00s             1.386294       1.386294      validation failed
+1800s QLP / 1800.00s             1.386294       1.386294      validated
 
-1800s otherwise-passing events remain follow-up. Unknown groups, fallback flux
-streams and changed scientific settings likewise remain unvalidated. Explicit
+The November 10 fixed-cut confirmation now passes for 1800s; otherwise-passing
+events can be accepted. Unknown groups, fallback flux streams and changed
+scientific settings remain unvalidated. Explicit
 external calibration remains possible with strict source/settings checks.
 
 Validation labels describe the finite calibration exercise. The 5% target is
 not survey contamination, and the 20s group used only three background stars.
 The calibration contains development reuse and substantial follow-up at 20s.
-The built-in cuts were carried forward; this distribution is not a new study.
+The numerical cuts were carried forward; the November 10 confirmation uses
+fresh random trials on reused 600s/1800s backgrounds. See CUTOFFS_FINAL.txt.
 
 7. EDGE CANDIDATES ARE RETAINED FOR FOLLOW-UP
 
@@ -210,8 +212,9 @@ WHAT CHANGED IN THIS SHARING PASS ONLY
 - Matching optional precheck imports, source snapshot name and --version.
 - Pinned requirements, generic installation/run/tmux guidance, synthetic example
   generator, portable regression tests and release hash manifest.
-- Scientific functions, Config defaults and embedded calibration are unchanged
-  from the exact November 9 Perfected source identified above.
+- Scientific functions and Config defaults are unchanged from the November 9
+  source. Numerical cuts are unchanged. November 10 refreshes the 600s/1800s
+  calibration evidence and permits otherwise-passing 1800s acceptance.
 
 PERFORMANCE AND LIMITS
 
