@@ -2,182 +2,121 @@
 
 **Bayesian Analysis of Stellar High-energy Eruption Events**
 
-Stellar-flare detection and measurement for TESS light curves. This repository
-contains **`BANSHEE_Lite_Chi.py`**: broad-grid Bayesian detection followed by
-continuous chi-square parameter fitting with an exposure-averaged
-**Tovar Mendoza et al. (2022)** flare template.
+Stellar-flare detection and measurement for TESS light curves. The current
+standalone release is **[BANSHEE_Final.py](BANSHEE_Final/BANSHEE_Final.py)**,
+version **2026.11.09.share1**. It includes local-noise screening, flare-protected
+detrending, exposure-integrated flare models, and saved SAP calibration cuts.
 
-[Quick start](#quick-start) | [Inputs and outputs](docs/inputs-and-outputs.md) |
-[Flags](docs/flags.md) | [Method](docs/method.md) | [Batch processing](docs/batch-processing.md)
-
-## Features
-
-- Reads one-dimensional FITS, CSV, or Parquet light curves.
-- Detrends by default, or accepts explicitly identified pre-detrended inputs.
-- Seeds candidates at 3 sigma, then compares flare, reversed-flare, and artifact hypotheses.
-- Keeps **accepted**, **follow-up**, and **rejected** candidates in separate tables.
-- Fits peak time and FWHM continuously; solves nonnegative amplitude and a linear baseline analytically.
-- Calculates equivalent duration (ED), and TESS-band energy when calibrated.
-
-This is the **Chi version**, not the experimental Test/Updated code. It retains
-the original classification rules, including candidate-overflow follow-up.
-Detection and parameter usability are separate: an accepted event can have
-unreliable measurements.
+[Full run guide](BANSHEE_Final/README.txt) |
+[Changes since Lite_Chi](BANSHEE_Final/CHANGES_SINCE_LITE_CHI.txt) |
+[Validation](BANSHEE_Final/VALIDATION.txt) |
+[Legacy Lite_Chi guide](README_LITE_CHI.md)
 
 ## Installation
 
-Requires **Python 3.11+**, on **Linux or macOS**. The server interface imports Unix
-`fcntl`; Windows users should use **WSL2/Linux**, not native Windows.
+Use Python **3.11–3.13** on Linux or macOS; Windows users require WSL.
+The complete portable release is in the `BANSHEE_Final` folder.
 
 ```bash
 git clone https://github.com/Logan-J-Snyder/BANSHEE.git
-cd BANSHEE
+cd BANSHEE/BANSHEE_Final
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
+python -m pip install -r requirements.txt
+python BANSHEE_Final.py --version
 ```
 
-Alternatively, install `requirements.txt` and run the script directly. This project
-is not on PyPI; an unrelated package named `banshee` is not this code. Direct
-dependency versions used locally are in [requirements-tested.txt](requirements-tested.txt).
-Numerical-library threads are limited to one by the module when imported.
+Dependencies are installed once. The detector reads local inputs and can run
+offline afterward. No archive account is needed. This project is not on PyPI;
+an unrelated package named `banshee` is not this code.
 
 ## Quick Start
 
-Generate a reproducible synthetic 2-minute light curve and run the detector:
+Generate artificial examples at all five supported calibration cadences:
 
 ```bash
-python examples/make_demo_lightcurve.py --output-dir demo_data
-python BANSHEE_Lite_Chi.py \
-  --input demo_data/0000000000000000000_S01_SPOC_demo.csv \
-  --output-dir results/demo \
-  --already-detrended --flux-column flux \
-  --tess-band-luminosity 1e30 --plots
-python examples/summarize_results.py results/demo
+python make_example_lightcurves.py --output ./example_lightcurves
+python -u BANSHEE_Final.py \
+  --input ./example_lightcurves --output-dir ./example_results \
+  --workers 2 --plots
 ```
 
-The demo is already flat apart from noise and the flare. Its flux is centered near
-**one**, not zero: **do not add `--residual`** to this example. Its all-zero source
-ID and luminosity are synthetic placeholders, not measurements of a real star.
-No archive account or network query is needed for this demo.
-
-![Synthetic demo: original flux, residual, and candidate locations](docs/images/example_overview.png)
-
-This matching-template demonstration checks operation, not survey completeness
-or independent scientific accuracy. Generated inputs and results remain local.
-
-## Usage
-
-### A FITS Light Curve
+For your own light curves:
 
 ```bash
-python BANSHEE_Lite_Chi.py \
-  --input /path/to/lightcurve.fits --output-dir results/my_star --plots
+python -u BANSHEE_Final.py \
+  --input /path/to/lightcurves --output-dir /path/to/results --workers 4
 ```
 
-Detrending is enabled here. Default flux preference starts with `PDCSAP_FLUX`,
-then `KSPSAP_FLUX`, `SAP_FLUX`, `raw_flux`, or `flux`. Select a column explicitly
-with `--flux-column COLUMN_NAME`. Pipeline-corrected flux is not detector raw pixels.
+Each FITS, CSV or Parquet input must represent one star, sector and flux stream.
+Keep inputs and outputs in separate, non-nested folders. Automatic loading
+prefers `SAP_FLUX`; add `--flux-column SAP_FLUX` to require it explicitly.
 
-### A Folder, Four Workers
+No new calibration run is needed for matching built-in SAP settings. Current
+1800-second calibration remains **validation_failed**: otherwise passing events
+remain follow-up. Other streams, exposures or changed scientific settings do
+not automatically inherit validation. See the [run guide](BANSHEE_Final/README.txt)
+for exact cuts, calibration scope, server-layout mode, tmux and resume instructions.
+
+## Detection and Outputs
+
+- Three-sigma candidate thresholds follow changing local noise.
+- Flare models compete with background, reversed-flare, symmetric-bump and
+  impulse alternatives, with additional raw-flux and morphology checks.
+- Candidates excluded only by the outer 5% edge rule are retained for follow-up.
+- Accepted, follow-up, rejected and complete diagnostic tables are written as
+  CSV and Parquet. Optional plots support review.
+- Progress reports elapsed time and processed jobs. Recoverable file failures
+  are recorded while the batch continues; a failed batch returns a nonzero
+  status after preserving successful products.
+
+The optional advisory precheck runs before fitting and does not change
+detection tiers:
 
 ```bash
-python BANSHEE_Lite_Chi.py \
-  --input /path/to/lightcurves --output-dir results/batch \
-  --workers 4 --candidate-workers 1
+python -u BANSHEE_Final_With_Precheck.py \
+  --input /path/to/lightcurves --output-dir /path/to/results --workers 4
 ```
 
-Folders are searched recursively. Keep stellar catalogues and prior outputs
-**outside** the input folder. Start with one file before a batch. For the audited
-OC/FS input tree and resumable runs, see [batch processing](docs/batch-processing.md).
+Detection and parameter usability remain separate. Inspect `parameter_usable`
+before population measurements. TESS-band flare energy is not bolometric energy.
+The calibration's 5% false-alarm target is per tested control window, not a 5%
+contamination guarantee for a survey flare catalog.
 
-### Already-Detrended Zero-Centered Residuals
+## Validation and History
+
+The portable release passed **89 local regression tests**. Its scientific
+results matched the preserved November 9 Perfected source exactly on five
+synthetic cadence examples, excluding runtime measurements. Resume, failure
+continuation, exports and the advisory wrapper were also checked.
+
+From the `BANSHEE_Final` directory:
 
 ```bash
-python BANSHEE_Lite_Chi.py \
-  --input /path/to/residual.csv --output-dir results/residual \
-  --already-detrended --residual --flux-column residual_flux
+python -m unittest discover -s tests -v
 ```
 
-### Python API
+These checks establish operation and source equivalence, not population
+completeness or independent real-data accuracy. See the
+[validation record](BANSHEE_Final/VALIDATION.txt) and
+[release manifest](BANSHEE_Final/RELEASE_MANIFEST.json).
 
-```python
-from pathlib import Path
-import BANSHEE_Lite_Chi as banshee
-
-config = banshee.Config()  # Detrending and chi-square fitting enabled.
-lightcurve = banshee.load_lightcurve(Path("/path/to/lightcurve.fits"), config)
-events, prepared, fits, diagnostics = banshee.analyze(lightcurve, config)
-accepted = events.loc[events["tier"] == "accepted"]
-if "parameter_usable" in accepted:
-    usable = accepted.loc[accepted["parameter_usable"].fillna(False)]
-else:
-    usable = accepted.iloc[:0]  # No characterized candidates.
-```
-
-For file writing and calibration, use the CLI or
-`run_file((input_path, output_dir, config, plots))`. The API is currently the
-standalone module, not a separate stable public package interface.
-
-## Output
-
-| Combined file | Contents |
-|---|---|
-| `accepted_flares.csv` | Accepted detections, including measurement warnings |
-| `followup_flares.csv` | Ambiguous, incomplete, failed, or overflow candidates |
-| `rejected_candidates.csv` | Rejected seeds, not all non-flaring observations |
-| `runtimes.csv` | Per-file status, timing, and errors in ordinary mode |
-| `manifest.json` | Configuration and hashes in ordinary mode |
-
-Per-input folders retain full `all_events.csv`, `summary.json`, and optional
-plots/`prepared.npz`. Combined tables omit some diagnostics: use `all_events.csv`
-for complete decisions. `E_TESS = ED_seconds * L_TESS_erg_per_second`; missing
-calibration leaves energy missing. TESS-band energy is not bolometric energy.
-`*_bayesian_p16/p50/p84` are **not** error bars on continuous chi-square estimates.
-See [scientific limitations](docs/method.md) before interpreting measurements.
-
-## Project Structure
-
-```text
-BANSHEE/
-  BANSHEE_Lite_Chi.py       # Standalone scientific implementation
-  banshee_cli.py            # Installed command wrapper
-  pyproject.toml            # Installation metadata and dependencies
-  requirements*.txt        # Dependency ranges and tested snapshot
-  examples/                # Synthetic generator and result summary
-  docs/                    # Input/output, method, flag, and batch guides
-  tests/                   # Offline regression and command-line tests
-  .github/                 # CI and issue / pull-request templates
-  CITATION.cff             # Software citation metadata
-  PROVENANCE.json          # Source hashes and packaging-only changes
-```
-
-## Tests
-
-```bash
-python -m pytest
-banshee-lite-chi --help
-banshee-lite-chi --server --help
-```
-
-Tests cover exposure averaging, continuous fits, fallback, quality filtering,
-exact IDs, exports, and a command-line smoke run. They do not establish survey-wide
-sensitivity or accuracy on every morphology. See [contributing](CONTRIBUTING.md).
+`BANSHEE_Lite_Chi.py`, its installed `banshee-lite-chi` command, tests and original
+guides remain available. The root `pyproject.toml` and `docs/` guides describe
+that legacy interface; use the self-contained Final folder for the current
+detector. Existing results and calibration files are not interchangeable
+between these versions. See the [legacy guide](README_LITE_CHI.md).
 
 ## References and Reuse
 
-The shape follows [Tovar Mendoza et al. (2022)](https://arxiv.org/abs/2205.05706).
-Bayesian detection is motivated by [Pitkin et al. (2014)](https://arxiv.org/abs/1406.1712).
-The detrending implementation is based on
+Method references include [Tovar Mendoza et al. (2022)](https://arxiv.org/abs/2205.05706),
+[Pitkin et al. (2014)](https://arxiv.org/abs/1406.1712), and
 [Ilin & Poppenhaeger (2022)](https://doi.org/10.1093/mnras/stac1232).
-These sources do not independently validate our implementation, thresholds, or
-usability flags. See [method and references](docs/method.md).
+These sources do not independently validate this implementation or its empirical
+thresholds. Use GitHub's citation metadata for the software version used and
+cite the relevant method papers separately.
 
-Use GitHub's **Cite this repository** metadata for the software, and cite the
-relevant method papers separately.
-
-**Copyright (c) 2026 Logan Snyder. All rights reserved.** This is not an
-open-source license: use and reuse require prior written permission, subject to
-the exceptions in [LICENSE](LICENSE). Installation instructions and examples are
-provided for authorized users. Third-party dependencies retain their own terms.
+**Copyright (c) 2026 Logan Snyder. All rights reserved.** Use and reuse require
+prior written permission, subject to the exceptions in [LICENSE](LICENSE).
+Installation instructions are provided for authorized users. Third-party
+dependencies retain their own terms.

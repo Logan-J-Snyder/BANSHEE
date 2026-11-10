@@ -1,0 +1,223 @@
+BANSHEE_Final.py versus BANSHEE_Lite_Chi.py
+Release 2026.11.09.share1 -- source comparison, not a new recovery benchmark
+
+EXACT COMPARISON
+
+Baseline BANSHEE_Lite_Chi.py SHA-256:
+c0ef5b973747ab3fd461d8bda1fefe3eee199cab6a389f6431fc0525337cf0ac
+November 9 BANSHEE_Perfected.py used for this distribution, SHA-256:
+d1359c499e6c549ad04c893485c0f8c741f2be44bd3314c8e2b1442652f2bea5
+
+A second local Lite_Chi copy had minor command-example/path and plot-label
+differences. Its scientific implementation matched the baseline comparison.
+The source hashes make this comparison specific to the reviewed revisions.
+
+WHAT WAS ALREADY PRESENT IN LITE_CHI
+
+The following are retained foundations, not newly introduced by Final:
+- Tovar flare template, exact exposure integration and model equivalent duration.
+- Proper positive-amplitude marginalization and prior-weighted broad-grid evidence.
+- Continuous profile-likelihood chi-square fits for peak, width and amplitude.
+- Separate Bayesian point estimates/credible intervals and chi-square estimates.
+- Ilin-inspired detrending, QUALITY filtering, gap segmentation, duplicate handling.
+- Three-sigma seeds and one-sigma event expansion as basic detection scales.
+- Reverse-flare and impulse comparisons, raw step checks and tail association.
+- Accepted/follow-up/rejected categories, optional review plots and multiprocessing.
+- Gaia ID matching and optional approximate TESS-band energies.
+- A dedicated batch runner and resume behavior (substantially revised since then).
+
+1. NOISE NOW CHANGES WITH TIME
+
+Lite_Chi estimated a quiet scatter per segment, then used a local fit-window
+scatter and error treatment. Final estimates rolling noise separately inside
+each gap-defined segment. It uses a 2-hour nominal window with at least 41
+quiet points, widening support within the segment when necessary.
+
+Protected flare intervals are excluded from quiet scatter and adjacent-point
+differences. Lower-tail scatter and the selected flux stream's formal errors
+provide floors against artificially low noise. Seeding and likelihood use the
+same varying total noise; formal errors are not scaled down to fit residuals.
+The default three-sigma requirement is retained but now follows local noise.
+Code: prepare, local_noise, quiet_local_baseline, characterize.
+
+2. FLARES ARE PROTECTED DURING DETRENDING
+
+Final makes iterative updates to masks of likely flares and tails while refitting
+the original flux through the detrending stages. Protected intervals are not
+treated as quiet background points. The procedure uses observed data, never
+injection truth. Sparse protected background is explicitly recorded as uncertain.
+Support handling in spline, cosine and Savitzky-Golay stages was revised.
+Code: flare_protection, background_keep, protected_savgol_background, detrend.
+
+3. CANDIDATE FINDING AND FIT CONTEXT WERE REWORKED
+
+Lite_Chi expanded contiguous threshold islands and merged overlapping islands.
+Final requires both peak height and prominence to reach the local three-sigma
+level, uses valleys to separate nearby peaks and measures a width hint.
+This limits merging of hours of positive background into a single candidate.
+
+Peak priors are local and symmetric around the observed peak. Fit-window size
+and neighbor padding use the width hint. Insufficient quiet background triggers
+an expanded context, then follow-up if still insufficient. No interpolation
+creates extra observed cadences. Code: find_candidates, candidate_peak_grid,
+characterize.
+
+4. A SMALL FLARE-SHAPE FAMILY REPLACES ONE FIXED RISE SHAPE
+
+Default models have Tovar rise stretches of 0.5, 1 and 2. Bayesian evidence
+integrates over those discrete choices with normalized weights; it does not
+choose the best template and label its maximum score as marginal evidence.
+Continuous fits evaluate the family separately and choose the best converged
+chi-square solution. Model names are exported. Widths and integrated areas are
+computed consistently for the selected shape.
+
+The minimum physical FWHM is now 0.1 minute independent of exposure, instead of
+max(0.1 minute, 0.25 * exposure). Exact exposure averaging remains. An unresolved
+width alone no longer invalidates a detection; cadence_limited and parameter
+diagnostics distinguish detection from reliable parameter measurement.
+Code: template_functions, evaluate_grid, minimize_flare_chi2, characterize.
+
+5. THE OPERATING BAYES FACTOR HAS CHANGED
+
+Lite_Chi used a fixed lnBF >= 5 against background plus individual morphology
+margins. Final's default score compares the flare family with an equal-weight
+mixture of four alternatives: background alone, reversed flare, symmetric
+Gaussian-like bump, and single-exposure impulse.
+
+The minimum mixture cut ln(4) also requires flare evidence to exceed each
+individual alternative. Separate weak direction/impulse/symmetry margins are
+retained as diagnostics instead of repeatedly rejecting the same coarse-cadence
+ambiguity. Strong artifact evidence, raw-flux steps and symmetric bumps, weak
+raw-flux flare signal, and fitted sampled peaks below three sigma still reject.
+Gap/edge morphology checks remain distinct. A flare-shaped transient can still
+pass: the detector cannot prove the astrophysical origin from one curve.
+
+Use detection_log_bayes_factor for the operating score. log_bayes_factor still
+means flare-versus-background; comparing that column directly with the new
+default cut would be incorrect. Code: artifact_checks, gaussian_grid_evidence,
+step_grid_evidence, characterize, operating_threshold.
+
+6. CADENCE/STREAM/EXPOSURE CALIBRATION AND BUILT-IN DEFAULTS
+
+New calibration machinery uses flare injections and negative/artifact controls,
+separate threshold-selection and checking draws, a recovery requirement and a
+binomial upper bound on false alarms per tested window. Actual product, selected
+flux stream, cadence and exposure are separate parts of the calibration key.
+
+Two operating cuts per group use fitted sampled peak SNR < 8 versus >= 8.
+The pair shares a control-window false-alarm budget. They do not need to vary
+monotonically with cadence. The recalibration screened pre-existing positive
+and negative coherent transients before injecting, independently of BANSHEE fits.
+Placement failures stay recorded instead of being silently replaced.
+
+The existing SAP measurements are now embedded, so a normal run requires no
+calibration step or input JSON. Values below are rounded; full precision and
+provenance are preserved in the Python file.
+
+Cadence/product/exposure        Ordinary cut   High-SNR cut   Status
+20s SPOC / 19.80s                 4.172180       1.386294      validated
+120s SPOC / 118.80s               1.422173       2.878134      validated
+200s QLP / 200.00s               1.386294       1.386294      validated
+600s QLP / 600.00s               1.386294       1.386294      validated
+1800s QLP / 1800.00s             1.386294       1.386294      validation failed
+
+1800s otherwise-passing events remain follow-up. Unknown groups, fallback flux
+streams and changed scientific settings likewise remain unvalidated. Explicit
+external calibration remains possible with strict source/settings checks.
+
+Validation labels describe the finite calibration exercise. The 5% target is
+not survey contamination, and the 20s group used only three background stars.
+The calibration contains development reuse and substantial follow-up at 20s.
+The built-in cuts were carried forward; this distribution is not a new study.
+
+7. EDGE CANDIDATES ARE RETAINED FOR FOLLOW-UP
+
+Final defaults to a time-based first/last 5% rule at the outer ends of the entire
+light curve. This replaces Lite_Chi's lack of a configurable fractional mask.
+An optional segment mode applies it at every gap-defined segment; that is a
+different, unvalidated configuration unless separately calibrated.
+
+In the latest routing update, an edge-only exclusion becomes follow-up with
+reason=edge_region. An edge seed is not fitted; already fitted events that
+cross the boundary retain their fit. No invented lnBF/energy is assigned.
+Independent artifact/evidence failures remain rejected. These edge-only events
+cannot become parents that suppress or demote interior flares. Usable exposure
+accounting and gap diagnostics are retained. Edge completeness was not measured.
+Code: edge_mask, _fit_one, route_edge_review, analyze.
+
+8. TAIL ASSOCIATION AND THRESHOLD ORDER ARE MORE CONSISTENT
+
+Tail association already existed. It now uses the chosen rise-stretch family and
+quiet local baseline. Eligibility is applied before association; operating cuts
+are applied afterward so raising a cut cannot promote a previously suppressed
+child by removing its parent. Detection and parameter reliability remain separate.
+Code: associate_tails, analyze.
+
+9. SAP-FIRST LOADING AND STRONGER INPUT CHECKS
+
+Lite_Chi preferred corrected flux by default. Final prefers SAP_FLUX, followed by
+PDCSAP_FLUX for SPOC or KSPSAP_FLUX for QLP. An explicit --flux-column is exact.
+Fallback streams do not receive SAP calibration status.
+
+Final uses only an uncertainty column matching the selected flux stream, instead
+of borrowing another stream's errors. It rejects floating-point Gaia IDs, mixed
+star/sector/mission tables, mixed or invalid explicit exposures, mismatched
+arrays and fewer than five unique clean cadences. Sources remain unchanged.
+Code: clean_id, load_fits, load_table, clean_lightcurve, _select_flux.
+
+10. SIMPLER VISIBLE FLAGS, MORE AUDITABLE OUTPUTS
+
+Accepted rows show only cadence_limited as a visible warning when relevant.
+Follow-up reasons are consolidated (edge_region, calibration_required,
+processing_limit, fit_failed, background_uncertain, incomplete_event,
+blended_event, shape_ambiguous). Full reasons, fit diagnostics, prior-boundary
+warnings and morphology details remain in all_events. They are not discarded
+and can still make parameter_usable false.
+
+Added exports include gaia_dr3_id, calibration group/status, actual operating
+score and applied cut, ordinary/high SNR class, local-noise diagnostics,
+shape-family labels and edge-review status. Batch tables are CSV and Parquet.
+Code: concise_flags, compact_table, run_product, merge_products.
+
+11. BATCH EXECUTION AND PROVENANCE WERE REBUILT
+
+Final unifies direct and OC/FS-layout entrypoints, bounds queued worker jobs,
+writes products atomically, records individual failures and continues usable
+curves. It streams aggregation instead of requiring every event in memory.
+Manifest checks include code, configuration, calibration, input fingerprints,
+catalog hashes, Python and dependency versions; changed runs require a new folder.
+The progress bar reports time and processed jobs; summaries separate successful,
+failed and uncalibrated products. Per-LC candidate progress is saved on disk.
+
+The default candidate cap is unlimited in both modes. Lite_Chi's server mode
+defaulted to 300. A user-specified cap still retains ALL candidates as unfitted
+follow-up when exceeded; it never silently fits just the first N.
+Resume existed in Lite_Chi; these are changes to its implementation and checks.
+
+12. OPTIONAL LIGHT-CURVE PRECHECK (SEPARATE MODULE)
+
+BANSHEE_Precheck.py and BANSHEE_Final_With_Precheck.py add diagnostics for
+sustained noise changes, correlated background, impulses, steps, bumps, dips,
+and unusable/short curves. The wrapper prechecks all selected inputs before
+fitting. These warnings are advisory and do not modify data, calibration or
+detection tiers. The standalone detector does not run this extra stage.
+
+WHAT CHANGED IN THIS SHARING PASS ONLY
+
+- New standalone filename/module BANSHEE_Final.py; prior files retained.
+- Generic ./lightcurves input default and /path/to/... documentation.
+- No account/host-specific launcher or observed input data in the archive.
+- Matching optional precheck imports, source snapshot name and --version.
+- Pinned requirements, generic installation/run/tmux guidance, synthetic example
+  generator, portable regression tests and release hash manifest.
+- Scientific functions, Config defaults and embedded calibration are unchanged
+  from the exact November 9 Perfected source identified above.
+
+PERFORMANCE AND LIMITS
+
+This file-by-file comparison establishes implementation changes, not a new
+head-to-head accuracy or runtime benchmark against Lite_Chi. The shape family
+and protected detrending add work; runtime depends on cadence, curve length,
+variability and candidate count. Earlier injection/catalog exercises apply to
+their stated versions and backgrounds, not automatically to every SAP sector.
+See VALIDATION.txt for the functional and equivalence checks run on this release.

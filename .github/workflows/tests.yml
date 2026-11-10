@@ -29,7 +29,16 @@ jobs:
           python-version: ${{ matrix.python }}
           cache: pip
       - run: python -m pip install --upgrade pip
-      - run: python -m pip install -e ".[dev]"
+      - run: python -m pip install -r BANSHEE_Final/requirements.txt -e ".[dev]"
       - run: python -m pytest
+      - name: Test BANSHEE Final
+        working-directory: BANSHEE_Final
+        run: python -m unittest discover -s tests -v
+      - name: Check BANSHEE Final entrypoints
+        working-directory: BANSHEE_Final
+        run: |
+          python BANSHEE_Final.py --version
+          python BANSHEE_Final.py --help
+          python BANSHEE_Final_With_Precheck.py --help
       - run: banshee-lite-chi --help
       - run: banshee-lite-chi --server --help

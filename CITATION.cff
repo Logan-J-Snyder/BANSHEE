@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "Please cite the software version used, and the relevant method papers listed in docs/method.md."
+message: "Please cite the software version used, and the relevant method papers listed in README.md."
 type: software
 title: "BANSHEE: Bayesian Analysis of Stellar High-energy Eruption Events"
 authors:
@@ -7,6 +7,6 @@ authors:
     given-names: Logan
 repository-code: "https://github.com/Logan-J-Snyder/BANSHEE"
 url: "https://github.com/Logan-J-Snyder/BANSHEE"
-version: 0.1.0.dev0
-date-released: 2026-10-20
-abstract: "Stellar-flare detection and exposure-averaged Tovar Mendoza parameter measurement with BANSHEE Lite Chi."
+version: "2026.11.09.share1"
+date-released: 2026-11-09
+abstract: "Stellar-flare screening and exposure-averaged parameter measurement with BANSHEE Final, including local-noise estimates and empirical SAP calibration."

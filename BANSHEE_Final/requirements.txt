@@ -1,0 +1,10 @@
+# Tested together on Python 3.13; these pins support Python 3.11-3.13.
+# Install in a NEW environment to preserve previous BANSHEE runs.
+numpy==2.3.5
+scipy==1.16.3
+pandas==2.3.3
+astropy==7.1.1
+lightkurve==2.6.0
+matplotlib==3.10.6
+tqdm==4.67.1
+pyarrow==21.0.0

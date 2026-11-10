@@ -1,5 +1,16 @@
 # Changelog
 
+## BANSHEE Final 2026.11.09.share1 - 2026-11-09
+
+- Add the self-contained `BANSHEE_Final/` release with the standalone detector,
+  optional advisory precheck, pinned dependencies, synthetic generator and tests.
+- Include the full Lite_Chi comparison, validation record and file-hash manifest.
+- Make Final the primary README workflow; preserve the legacy guide and code.
+- Extend CI to run both the legacy tests and the 89 Final regression tests.
+- Preserve the shared release's scientific settings and embedded calibration,
+  including the unvalidated 1800-second follow-up policy. No new calibration or
+  recovery benchmark was performed as part of this repository update.
+
 ## Rights Notice - 2026-10-20
 
 - Add an all-rights-reserved notice credited to Logan Snyder, as requested.
