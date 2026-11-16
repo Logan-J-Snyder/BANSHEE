@@ -13,6 +13,8 @@ BANSHEE Final `2026.11.16.edge1` (detector commit `fa6a587`) searched the entire
 
 Among the 3,971 accepted fits, the median BANSHEE-to-catalog amplitude ratio was 0.83 and the median FWHM ratio was 1.15. The match and fit statistics are in [summary.json](summary.json).
 
+[Browse all 1,134 missed peaks](missed_peaks/README.md), with one PNG per event and indexes by sector and outcome.
+
 ## Method
 
 - The detector used the built-in SAP calibration with no published peak times, widths, or amplitudes supplied at detection time. It ran on each full sector. The paper starts from PDC-SAP and applies additional detrending, so the fit comparisons include differences in flux products, preprocessing and flare models. [Paper method](https://arxiv.org/html/1901.00443v2#S3)
@@ -34,6 +36,8 @@ python validation/guenther_single_peaks/run_catalog.py \
   --catalog "$work/published_catalog.tsv" --indices "$work/sector1.sh" "$work/sector2.sh" \
   --cache "$work/fits" --output "$work" --download --workers 8
 python validation/guenther_single_peaks/plot_catalog.py "$work"
+python validation/guenther_single_peaks/plot_misses.py "$work" \
+  --search-root "$work/fits" --output "$work/missed_peaks"
 ```
 
 [Run configuration and input hashes](protocol.json) · [Per-light-curve source manifest](source_manifest.json) · [SNR-bin recovery counts](recovery_by_snr.csv)
