@@ -1,0 +1,13 @@
+cadence,stage,tier,n
+20,post,missed,32
+20,pre,missed,32
+120,post,missed,32
+120,pre,missed,32
+200,post,missed,32
+200,pre,missed,32
+600,post,missed,31
+600,post,rejected,1
+600,pre,missed,31
+600,pre,rejected,1
+1800,post,missed,32
+1800,pre,missed,32
