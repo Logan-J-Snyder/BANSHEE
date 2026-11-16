@@ -6,7 +6,7 @@ proper amplitude-marginalized grid evidence, independent continuous fits,
 cadence/product-specific injection controls, and audited resumable outputs.
 Saved SAP cadence thresholds are built in and used by default; no calibration
 step or separate calibration file is required for matching settings/groups.
-Candidates excluded only by the edge-fraction cut are retained for follow-up.
+Edge candidates are fitted and classified. Peaks in the outer 1% are flagged.
 Portable distribution of the existing detector; no new recovery guarantee.
 See README.txt, CHANGES_SINCE_LITE_CHI.txt, and --help.
 
@@ -2176,22 +2176,22 @@ def characterize(prepared, candidate, candidates, config):
 _CANDIDATE_WORKER_STATE = None
 
 
-def _initialize_candidate_worker(prepared,candidates,config):
+def _initialize_candidate_worker(prepared,candidates,config,fit_edges):
     """Copy read-only light-curve state once per candidate worker."""
     global _CANDIDATE_WORKER_STATE
-    _CANDIDATE_WORKER_STATE = prepared,candidates,config
+    _CANDIDATE_WORKER_STATE = prepared,candidates,config,fit_edges
 
 
-def _fit_one(prepared,candidates,index,config):
+def _fit_one(prepared,candidates,index,config, *, fit_edges=True, fitter=None):
     """Fit one independent event; preserve explicit numerical failure reasons."""
     candidate=candidates[index]
-    if prepared.detrend_edge_mask[candidate.peak_index]:
+    if not fit_edges and prepared.detrend_edge_mask[candidate.peak_index]:
         return dict(tier="rejected", reason="edge_fraction_cut",
                     seed_time=float(prepared.lightcurve.time[candidate.peak_index]),
                     tpeak=float(prepared.lightcurve.time[candidate.peak_index]),
                     parameter_usable=False), None
     try:
-        return characterize(prepared,candidate,candidates,config)
+        return (fitter or characterize)(prepared,candidate,candidates,config)
     except (ValueError,FloatingPointError,np.linalg.LinAlgError) as error:
         return dict(tier="followup",reason="fit_failed:"+str(error),
                     seed_time=float(prepared.lightcurve.time[candidate.peak_index])),None
@@ -2199,8 +2199,8 @@ def _fit_one(prepared,candidates,index,config):
 
 def _candidate_worker(index):
     """Worker tasks use indices so candidate identity remains consistent."""
-    prepared,candidates,config=_CANDIDATE_WORKER_STATE
-    return _fit_one(prepared,candidates,index,config)
+    prepared,candidates,config,fit_edges=_CANDIDATE_WORKER_STATE
+    return _fit_one(prepared,candidates,index,config,fit_edges=fit_edges)
 
 
 def associate_tails(results, candidates, prepared, fits, config):
@@ -2286,7 +2286,41 @@ def route_edge_review(row):
     row["edge_review_only"] = row.get("tier") == "followup" and "edge_fraction_cut" in reasons
 
 
-def analyze(lc, config=Config(), progress=None, *, associate=True, search_bounds=None):
+def apply_candidate_context(row, prepared, nearest, calibration_status, config):
+    """Apply the same background and calibration checks to new and saved seeds."""
+    if row["tier"] == "accepted" and prepared.background_uncertain_mask[nearest]:
+        row.update(tier="followup", parameter_usable=False,
+                   reason=";".join(filter(None, [row.get("reason", ""), "insufficient_protected_background"])))
+    if row["tier"] == "accepted" and calibration_status != "validated" and not config.allow_uncalibrated:
+        row.update(tier="followup", parameter_usable=False,
+                   reason=";".join(filter(None, [row.get("reason", ""), "calibration_"+calibration_status])))
+
+
+def score_candidate(row, config):
+    row["detection_statistic"] = config.detection_statistic
+    row["detection_log_bayes_factor"] = row.get(
+        "logbf_flare_vs_alternatives" if config.detection_statistic == "alternatives" else "log_bayes_factor", np.nan)
+    threshold = operating_threshold(row, config)
+    row["logbf_threshold_used"] = threshold
+    row["operating_snr_class"] = "high" if row.get("fitted_peak_snr", -np.inf) >= config.high_snr_boundary else "ordinary"
+    if (row["tier"] != "rejected" or "edge_fraction_cut" in row.get("reason", "").split(";")) and row["detection_log_bayes_factor"] < threshold:
+        row.update(tier="rejected", parameter_usable=False,
+                   reason=";".join(filter(None, [row.get("reason", ""), "log_bayes_factor_below_threshold"])))
+
+
+EDGE_CASE_FRACTION = .01
+
+
+def flag_edge_case(row, times):
+    """Use the fitted peak when available and the seed for an incomplete fit."""
+    peak = row.get("tpeak", row["seed_time"])
+    if not np.isfinite(peak):
+        peak = row["seed_time"]
+    margin = EDGE_CASE_FRACTION * (times[-1] - times[0])
+    row["edge_case"] = bool(peak < times[0] + margin or peak > times[-1] - margin)
+
+
+def analyze(lc, config=Config(), progress=None, *, associate=True, search_bounds=None, fit_edges=True):
     """Process one light curve; retain every candidate and every decision."""
     start = time.perf_counter()
     config, calibration_status = calibrated_config(lc, config)
@@ -2305,10 +2339,10 @@ def analyze(lc, config=Config(), progress=None, *, associate=True, search_bounds
                             seed_time=float(lc.time[c.peak_index])),None) for c in candidates)
         elif config.candidate_workers>1 and len(candidates)>1:
             executor=stack.enter_context(ProcessPoolExecutor(max_workers=config.candidate_workers,
-                initializer=_initialize_candidate_worker,initargs=(prepared,all_candidates,config)))
+                initializer=_initialize_candidate_worker,initargs=(prepared,all_candidates,config,fit_edges)))
             computed=executor.map(_candidate_worker,indices_to_fit)
         else:
-            computed=(_fit_one(prepared,all_candidates,i,config) for i in indices_to_fit)
+            computed=(_fit_one(prepared,all_candidates,i,config,fit_edges=fit_edges) for i in indices_to_fit)
         for number,(result,fit) in enumerate(computed):
             result.update(candidate_id=number,gdr3_id=lc.gdr3_id,sector=lc.sector,
                           mission=lc.mission,source_path=lc.source_path)
@@ -2316,45 +2350,29 @@ def analyze(lc, config=Config(), progress=None, *, associate=True, search_bounds
             if progress is not None and (number+1)%25==0:
                 progress(results,len(candidates),time.perf_counter()-start)
     diagnostics.update(detrend_seconds=detrend_seconds, total_seconds=time.perf_counter()-start)
-    # A fitted peak can cross the edge boundary even if its seed did not.
-    for row in results:
-        row.update(calibration_status=calibration_status, logbf_threshold_used=config.logbf_threshold,
-                   calibration_group=calibration_group(lc), edge_fraction=config.edge_fraction,
-                   gaia_dr3_id=lc.gdr3_id)
+    group = calibration_group(lc)
+    association_fits = fits.copy()
+    for i, (row, candidate) in enumerate(zip(results, candidates)):
+        row.update(calibration_status=calibration_status, calibration_group=group,
+                   edge_fraction=config.edge_fraction, gaia_dr3_id=lc.gdr3_id)
         nearest = int(np.argmin(abs(lc.time-row.get("tpeak", row["seed_time"]))))
-        if prepared.detrend_edge_mask[nearest] and row["tier"] != "rejected":
+        in_edge = prepared.detrend_edge_mask[nearest]
+        if in_edge or prepared.detrend_edge_mask[candidate.peak_index]:
+            # Keep edge results from changing the original interior tail decisions.
+            association_fits[i] = None
+        if not fit_edges and in_edge and row["tier"] != "rejected":
             row.update(tier="rejected", parameter_usable=False,
                        reason=";".join(filter(None, [row.get("reason", ""), "edge_fraction_cut"])))
-        if row["tier"] == "accepted" and prepared.background_uncertain_mask[nearest]:
-            row.update(tier="followup", parameter_usable=False,
-                       reason=";".join(filter(None, [row.get("reason", ""), "insufficient_protected_background"])))
-        if row["tier"] == "accepted" and calibration_status != "validated" and not config.allow_uncalibrated:
-            row.update(tier="followup", parameter_usable=False,
-                       reason=";".join(filter(None, [row.get("reason", ""), "calibration_"+calibration_status])))
-    # Apply eligibility before association: an excluded parent must never
-    # suppress a valid event through its extrapolated tail.
+        apply_candidate_context(row, prepared, nearest, calibration_status, config)
+        flag_edge_case(row, lc.time)
     if associate and (calibration_status == "validated" or config.allow_uncalibrated):
-        associate_tails(results, candidates, prepared, fits, config)
+        associate_tails(results, candidates, prepared, association_fits, config)
     for row in results:
-        row["detection_statistic"]=config.detection_statistic
-        row["detection_log_bayes_factor"]=row.get(
-            "logbf_flare_vs_alternatives" if config.detection_statistic=="alternatives" else "log_bayes_factor",np.nan)
-    # Keep the morphology and tail-association decision independent of the
-    # operating threshold. Otherwise removing a weak parent at a higher cut
-    # can promote a previously suppressed child, invalidating score-based
-    # calibration. Increasing the threshold may only remove detections.
-    for row in results:
-        threshold = operating_threshold(row, config)
-        row["logbf_threshold_used"] = threshold
-        row["operating_snr_class"] = "high" if row.get("fitted_peak_snr", -np.inf) >= config.high_snr_boundary else "ordinary"
-        if (row["tier"] != "rejected" or "edge_fraction_cut" in str(row.get("reason", "")).split(";")) and row.get("detection_log_bayes_factor",np.inf) < threshold:
-            row.update(tier="rejected",parameter_usable=False,
-                reason=";".join(filter(None,[row.get("reason",""),"log_bayes_factor_below_threshold"])))
-        # Do this only after association/thresholding: an edge event must not
-        # suppress or demote a valid interior flare through an uncertain tail.
+        score_candidate(row, config)
         route_edge_review(row)
         concise_flags(row)
     diagnostics["edge_review_candidates"] = sum(bool(row["edge_review_only"]) for row in results)
+    diagnostics["edge_case_candidates"] = sum(row["edge_case"] for row in results)
     diagnostics["calibration_status"] = calibration_status
     diagnostics["calibration_group"] = calibration_group(lc)
     diagnostics["logbf_threshold_used"] = config.logbf_threshold
@@ -2365,7 +2383,7 @@ def analyze(lc, config=Config(), progress=None, *, associate=True, search_bounds
             'tier','reason','seed_time','tpeak','fwhm_days','amplitude','equivalent_duration_s',
             'flare_energy_erg','energy_status','gaia_dr3_id','calibration_status',
             'diagnostic_reasons','parameter_diagnostics','warnings',
-            'logbf_threshold_used','calibration_group','edge_fraction','edge_review_only','detection_statistic','detection_log_bayes_factor'])
+            'logbf_threshold_used','calibration_group','edge_fraction','edge_review_only','edge_case','detection_statistic','detection_log_bayes_factor'])
     return frame, prepared, fits, diagnostics
 
 
@@ -2512,7 +2530,7 @@ from concurrent.futures import wait, FIRST_COMPLETED
 from importlib.metadata import version, PackageNotFoundError
 from scipy.stats import beta as beta_distribution
 
-DETECTOR_VERSION = "2026.11.10.cutoffs1"
+DETECTOR_VERSION = "2026.11.16.edge1"
 
 # Saved SAP calibration. The fit/morphology engine is unchanged from the source
 # revision below. No file, network request, or new injection run is needed.
@@ -3187,7 +3205,8 @@ def merge_products(records, output, run_id):
         for col in sample:
             if pd.api.types.is_object_dtype(sample[col].dtype) or pd.api.types.is_string_dtype(sample[col].dtype):
                 strings.add(col)
-    booleans = {"parameter_usable", "chi2_fit_success"} - strings
+    strings.discard("edge_case")
+    booleans = {"parameter_usable", "chi2_fit_success", "edge_case"} - strings
     schema = pa.schema([(col, pa.string() if col in strings else pa.bool_() if col in booleans else pa.float64()) for col in columns])
     counts = {tier:0 for tier in TABLES}
     with ExitStack() as stack:
@@ -3373,7 +3392,7 @@ def calibration_trial(spec, config):
                 signal[j] = rho*signal[j-1]+np.sqrt(1-rho*rho)*rng.normal()
             signal *= sigma*float(rng.choice([.5,1.,2.]))
         trial = replace(trial, flux=trial.flux+norm*signal)
-        frame, prepared, _, _ = analyze(trial, cfg, associate=True, search_bounds=bounds)
+        frame, prepared, _, _ = analyze(trial, cfg, associate=True, search_bounds=bounds, fit_edges=False)
         if len(frame) and frame.diagnostic_reasons.fillna("").str.contains("fit_failed|overflow").any():
             raise ValueError("A calibration window has an unmeasured candidate; not a successful null trial")
         accepted = frame.loc[frame.tier == "accepted"].copy()
@@ -3620,7 +3639,7 @@ def make_parser():
     parser.add_argument("--max-candidates",type=int,default=0,help="Above cap retain EVERY candidate as unfitted follow-up; zero disables")
     parser.add_argument("--noise-window-hours",type=float,default=2.)
     parser.add_argument("--noise-min-points",type=int,default=41)
-    parser.add_argument("--edge-fraction",type=float,default=.05,help="Fraction at EACH edge reserved for follow-up only; zero disables")
+    parser.add_argument("--edge-fraction",type=float,default=.05,help="Fraction at each edge excluded from calibration exposure and tail association")
     parser.add_argument("--edge-scope",choices=("lightcurve","segment"),default="lightcurve")
     parser.add_argument("--logbf-threshold",type=float,default=float(np.log(4.0)),help="Calibration search floor / provisional threshold")
     parser.add_argument("--detection-statistic",choices=("background","alternatives"),default="alternatives")
@@ -3725,7 +3744,7 @@ def main():
         elif config.builtin_calibration and not config.allow_uncalibrated:
             builtin_used = dict(BUILTIN_CALIBRATION, detector_version=DETECTOR_VERSION,
                                 code_sha256=file_sha256(__file__), calibration_source="built_in",
-                                edge_review_policy="Edge-only exclusions become follow-up after detection decisions; interior cuts unchanged")
+                                edge_review_policy="Edge seeds are classified using the interior thresholds. The outer 1% is flagged; calibration was measured on interior windows.")
             calhash = hashlib.sha256(json.dumps(builtin_used,indent=2,sort_keys=True,allow_nan=False).encode()).hexdigest()
             print("Using built-in SAP cadence thresholds; no calibration run is needed.",flush=True)
             for group,row in BUILTIN_CALIBRATION["groups"].items():
@@ -3759,7 +3778,7 @@ def main():
                 atomic_json(output/"calibration_used.json",builtin_used)
         remaining=[r for r in records if not completed(r,output,run_id)]
         print(f"Inputs {len(records)}; complete {len(records)-len(remaining)}; remaining {len(remaining)}",flush=True)
-        print(f"Local 3-sigma seeds; {100*config.edge_fraction:g}% at EACH end reserved for follow-up only. Unvalidated groups remain follow-up unless explicitly overridden.",flush=True)
+        print("Local 3-sigma seeds. Edge candidates are fitted, and the outer 1% is flagged as edge_case. Unvalidated groups remain follow-up unless explicitly overridden.",flush=True)
         failures=0; started=time.perf_counter()
         with (output/"run_log.jsonl").open("a",buffering=1) as log:
             for result in bounded_jobs(run_product,[(r,output,config,args.plots,run_id) for r in remaining],args.workers,"Light curves"):

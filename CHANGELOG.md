@@ -1,5 +1,14 @@
 # Changelog
 
+## BANSHEE Final 2026.11.16.edge1 - 2026-11-16
+
+- Fit edge candidates and keep their detector tier. Flag peaks within the outer
+  1% of the cleaned light-curve time span in every flare table.
+- Preserve the interior calibration protocol and prevent candidates in the
+  previous edge exclusion zone from changing interior tail decisions.
+- Refit legacy skipped edge candidates using the original detector snapshot
+  and merge replacements by input path and candidate ID.
+
 ## BANSHEE Final 2026.11.10.cutoffs1 - 2026-11-10
 
 - Finalize the existing numerical cadence/SNR cuts without retuning them.

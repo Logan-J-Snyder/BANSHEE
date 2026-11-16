@@ -182,14 +182,13 @@ class BansheeTests(unittest.TestCase):
         matched=a.iloc[np.argmin(abs(a.tpeak-lc.time[650]))]
         self.assertLess(abs(matched.tpeak-lc.time[650]),2*lc.exposure_days)
         self.assertTrue(.7<matched.equivalent_duration_s/(b.full_equivalent_duration_days(.012,.04,'tovar2022')*86400)<1.3)
-    def test_edge_candidate_retained(self):
-        lc=self.lightcurve(n=1000);lc.flux[20]+=.1
+    def test_edge_impulse_is_fit_and_rejected(self):
+        lc=self.lightcurve(n=1000);lc.flux[8]+=.1
         f,_,_,_=b.analyze(lc,b.Config(already_detrended=True,allow_uncalibrated=True))
-        edge=f[f.diagnostic_reasons.str.contains('edge_fraction_cut')]
-        self.assertGreater(len(edge),0)
-        self.assertTrue(edge.tier.eq('followup').all())
-        self.assertTrue(edge.reason.eq('edge_region').all())
-        self.assertTrue(edge.edge_review_only.all())
+        edge=f.loc[f.seed_time.eq(lc.time[8])].iloc[0]
+        self.assertEqual(edge.tier,'rejected')
+        self.assertTrue(edge.edge_case)
+        self.assertTrue(np.isfinite(edge.fwhm_days))
     def test_overflow_retains_all_candidates(self):
         lc=self.lightcurve(n=1400)
         lc.flux[np.arange(100,1300,100)]+=.03
@@ -240,10 +239,10 @@ class BansheeTests(unittest.TestCase):
             corrected,flag=b.fringe_stage(t,flux,b.IlinConfig())
         self.assertEqual(flag,'fringe_correction_unbounded')
         np.testing.assert_array_equal(corrected,flux)
-    def test_edge_excluded_parent_cannot_suppress_valid_child(self):
+    def test_edge_parent_cannot_suppress_valid_interior_child(self):
         lc=self.lightcurve(n=1000)
         candidates=[b.Candidate(np.array([i]),np.array([i]),i,0) for i in (51,60)]
-        def fit_one(prepared,all_candidates,index,config):
+        def fit_one(prepared,all_candidates,index,config,**kwargs):
             i=(51,60)[index]
             row=dict(seed_time=float(lc.time[i]),tpeak=float(lc.time[48 if index==0 else i]),
                      amplitude=.05 if index==0 else .01,fwhm_days=.03,sigma=.001,
@@ -251,9 +250,8 @@ class BansheeTests(unittest.TestCase):
             return row,{'exists':True}
         with patch.object(b,'find_candidates',return_value=candidates),patch.object(b,'_fit_one',side_effect=fit_one):
             f,_,_,_=b.analyze(lc,b.Config(already_detrended=True,allow_uncalibrated=True))
-        self.assertEqual(f.iloc[0].reason,'edge_region')
-        self.assertEqual(f.iloc[0].tier,'followup')
-        self.assertTrue(f.iloc[0].edge_review_only)
+        self.assertEqual(f.iloc[0].tier,'accepted')
+        self.assertFalse(f.iloc[0].edge_review_only)
         self.assertEqual(f.iloc[1].tier,'accepted')
     def test_calibration_mismatch_fails(self):
         with tempfile.TemporaryDirectory() as d:
@@ -343,7 +341,7 @@ class BansheeTests(unittest.TestCase):
     def test_operating_cut_applied_after_association(self):
         lc=self.lightcurve(n=1000)
         candidates=[b.Candidate(np.array([i]),np.array([i]),i,0) for i in (500,510)]
-        def fit_one(prepared,all_candidates,index,config):
+        def fit_one(prepared,all_candidates,index,config,**kwargs):
             i=(500,510)[index]
             return dict(seed_time=float(lc.time[i]),tpeak=float(lc.time[i]),
                 amplitude=.05 if index==0 else .01,fwhm_days=.03,sigma=.001,

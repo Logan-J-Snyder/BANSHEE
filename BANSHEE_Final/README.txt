@@ -151,23 +151,35 @@ not needed or recommended for the ordinary examples above.
 
 6. EDGE AND GAP HANDLING
 
-The first and last 5% of the full light-curve time span are reserved for follow-up.
-Candidates excluded ONLY by that cut receive reason=edge_region,
-edge_review_only=True, parameter_usable=False. An edge seed is retained without
-inventing a fit; an existing fit whose peak crosses the boundary is retained
-for inspection. Independent artifact/evidence failures remain rejected.
-Edge-only candidates cannot suppress interior events through tail association.
+All candidate seeds are eligible for fitting. A fitted peak in the first or
+last 1% of the full cleaned time span carries edge_case=True. If the fit
+returns no peak, the flag uses the seed time. The tier and diagnostic reasons
+reflect the usual morphology, background and evidence checks.
 
-Gap checks remain independent. --edge-scope segment applies the fraction to
-each gap-defined segment, but changes the scientific configuration and therefore
-does not use the default calibration as validated. --edge-fraction 0 disables
-the fraction cut and likewise changes the calibrated settings.
+The existing --edge-fraction and --edge-scope settings define the calibration
+and searchable exposure region. The default excludes the outer 5% at each
+end from those calculations and isolates that region from tail association.
+The saved false-alarm bounds apply to the calibrated interior. The added edge
+detections use the existing evidence thresholds and have no separate edge
+calibration. The two-cadence check at gaps still applies.
+
+Backfill previously skipped candidates from an existing run:
+
+  python -u backfill_edge_candidates.py --results /path/to/old/results --output /path/to/merged --workers 4
+
+Run where the original light curves and completed run folder are available.
+The script uses the detector snapshot, calibration and candidate IDs from the
+old run. It replaces the skipped rows in four merged Parquets in the output
+folder. Existing fitted rows keep their values. The edge_refit column marks
+the new results and edge_case is populated for refitted candidates. Rerunning
+the same command reuses completed fits and retries missing or failed inputs.
+Check backfill_summary.json for the number processed and any failures.
 
 7. OUTPUTS AND RESUMING
 
 The output folder contains CSV and Parquet versions of:
   accepted_flares       Passing candidates, not externally confirmed flares.
-  followup_flares       Ambiguous, unvalidated, edge or otherwise review-only events.
+  followup_flares       Ambiguous, unvalidated or otherwise review-only events.
   rejected_candidates  Candidates that failed the detector's checks.
   all_events           Every candidate, including detailed diagnostics.
 
@@ -180,7 +192,7 @@ Useful columns: gaia_dr3_id (exact string), sector, sample, tier, reason,
 warnings, tpeak (BTJD), fwhm_days, amplitude (relative instantaneous model peak),
 sampled_model_amplitude, fitted_peak_snr, equivalent_duration_s,
 detection_log_bayes_factor, log_bayes_factor, logbf_threshold_used,
-operating_snr_class, calibration_status, parameter_usable and edge_review_only.
+operating_snr_class, calibration_status, parameter_usable and edge_case.
 Detailed diagnostics are in all_events. Bayesian credible intervals are distinct
 from continuous chi-square point estimates, not uncertainties on those fits.
 Accepted warnings display only cadence_limited when applicable; always check

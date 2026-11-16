@@ -4,7 +4,7 @@
 
 Stellar-flare detection and measurement for TESS light curves. The current
 standalone release is **[BANSHEE_Final.py](BANSHEE_Final/BANSHEE_Final.py)**,
-version **2026.11.10.cutoffs1**. It includes local-noise screening, flare-protected
+version **2026.11.16.edge1**. It includes local-noise screening, flare-protected
 detrending, exposure-integrated flare models, and saved SAP calibration cuts.
 
 [Full run guide](BANSHEE_Final/README.txt) |
@@ -65,12 +65,17 @@ for exact cuts, calibration scope, server-layout mode, tmux and resume instructi
 - Three-sigma candidate thresholds follow changing local noise.
 - Flare models compete with background, reversed-flare, symmetric-bump and
   impulse alternatives, with additional raw-flux and morphology checks.
-- Candidates excluded only by the outer 5% edge rule are retained for follow-up.
+- Edge candidates are fitted and classified. The outer 1% carries an independent
+  `edge_case` flag.
 - Accepted, follow-up, rejected and complete diagnostic tables are written as
   CSV and Parquet. Optional plots support review.
 - Progress reports elapsed time and processed jobs. Recoverable file failures
   are recorded while the batch continues; a failed batch returns a nonzero
   status after preserving successful products.
+
+Use [backfill_edge_candidates.py](BANSHEE_Final/backfill_edge_candidates.py)
+to refit skipped edge candidates from an earlier run and write merged Parquets.
+The [run guide](BANSHEE_Final/README.txt) describes the required saved products.
 
 The optional advisory precheck runs before fitting and does not change
 detection tiers:

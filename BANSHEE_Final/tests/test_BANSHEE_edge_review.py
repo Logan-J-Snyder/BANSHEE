@@ -28,30 +28,36 @@ class EdgeReviewTests(unittest.TestCase):
         return dict(tier='accepted',reason='',seed_time=t,tpeak=t,fitted_peak_snr=5,
                     logbf_flare_vs_alternatives=20.,parameter_usable=True),None
 
-    def test_both_outer_edges_are_unfit_followup_and_interior_is_accepted(self):
+    def test_edge_flags_are_independent_of_tier_and_all_seeds_are_fit(self):
         lc=self.lc();cfg=b.Config();p=self.prepared(lc,cfg)
-        candidates=[self.candidate(k) for k in (20,500,980)]
+        candidates=[self.candidate(k) for k in (5, 8, 20, 500, 993)]
+        def fit(prepared, candidate, candidates, config):
+            row, _ = self.characterize(prepared, candidate, candidates, config)
+            if candidate.peak_index == 8:
+                row.update(tier='rejected', reason='insufficient_competing_model_evidence')
+            if candidate.peak_index == 993:
+                row.update(tier='followup', reason='peak_near_gap_or_edge')
+            return row, None
+
         with patch.object(b,'prepare',return_value=(p,{})), \
              patch.object(b,'find_candidates',return_value=candidates), \
-             patch.object(b,'characterize',side_effect=self.characterize) as fitting:
-            frame,_,fits,diagnostics=b.analyze(lc,cfg)
-        self.assertEqual(frame.tier.tolist(),['followup','accepted','followup'])
-        self.assertEqual(frame.reason.tolist(),['edge_region','','edge_region'])
-        self.assertEqual(frame.edge_review_only.tolist(),[True,False,True])
-        self.assertTrue(frame.loc[[0,2],'parameter_usable'].eq(False).all())
-        self.assertTrue(frame.loc[[0,2],'fitted_peak_snr'].isna().all())
-        self.assertIsNone(fits[0]);self.assertIsNone(fits[2])
-        self.assertEqual(fitting.call_count,1)
-        self.assertEqual(diagnostics['edge_review_candidates'],2)
+             patch.object(b,'characterize',side_effect=fit) as fitting:
+            frame, _, _, diagnostics=b.analyze(lc,cfg)
+        self.assertEqual(frame.tier.tolist(), ['accepted','rejected','accepted','accepted','followup'])
+        self.assertEqual(frame.edge_case.tolist(), [True,True,False,False,True])
+        self.assertEqual(frame.reason.tolist(), ['', 'insufficient_competing_model_evidence', '', '', 'incomplete_event'])
+        self.assertFalse(frame.edge_review_only.any())
+        self.assertEqual(fitting.call_count,5)
+        self.assertEqual(diagnostics['edge_case_candidates'],3)
 
-    def test_segment_edge_mode_includes_both_sides_of_a_gap(self):
+    def test_calibration_excludes_both_sides_of_a_gap(self):
         lc=self.lc(gap=True);cfg=b.Config(edge_scope='segment',allow_uncalibrated=True)
         p=self.prepared(lc,cfg,gap=True)
         candidates=[self.candidate(k,int(k>=500)) for k in (10,490,510,990)]
         with patch.object(b,'prepare',return_value=(p,{})), \
              patch.object(b,'find_candidates',return_value=candidates), \
              patch.object(b,'characterize',side_effect=AssertionError('Edge seed must not be fit')):
-            frame,_,_,_=b.analyze(lc,cfg)
+            frame,_,_,_=b.analyze(lc,cfg,fit_edges=False)
         self.assertTrue(frame.tier.eq('followup').all())
         self.assertTrue(frame.edge_review_only.all())
 
@@ -65,28 +71,30 @@ class EdgeReviewTests(unittest.TestCase):
         self.assertTrue(frame.tier.eq('accepted').all())
         self.assertFalse(frame.edge_review_only.any())
 
-    def test_fitted_peak_crossing_edge_retains_fit_for_followup(self):
+    def test_fitted_peak_crossing_one_percent_keeps_fit_and_tier(self):
         lc=self.lc();cfg=b.Config();p=self.prepared(lc,cfg)
-        row,_=self.characterize(p,self.candidate(51),[],cfg);row['tpeak']=lc.time[48]
+        row,_=self.characterize(p,self.candidate(51),[],cfg);row['tpeak']=lc.time[8]
         fit={'indices':np.arange(40,70),'marker':'retained'}
         with patch.object(b,'prepare',return_value=(p,{})), \
              patch.object(b,'find_candidates',return_value=[self.candidate(51)]), \
              patch.object(b,'_fit_one',return_value=(row,fit)):
             frame,_,fits,_=b.analyze(lc,cfg)
-        self.assertEqual(frame.iloc[0].tier,'followup')
-        self.assertFalse(frame.iloc[0].parameter_usable)
+        self.assertEqual(frame.iloc[0].tier,'accepted')
+        self.assertTrue(frame.iloc[0].edge_case)
+        self.assertTrue(frame.iloc[0].parameter_usable)
         self.assertIs(fits[0],fit)
 
     def test_fitted_edge_event_below_operating_cut_stays_rejected(self):
         lc=self.lc();cfg=b.Config();p=self.prepared(lc,cfg)
         row,_=self.characterize(p,self.candidate(51),[],cfg)
-        row.update(tpeak=lc.time[48],logbf_flare_vs_alternatives=2.)
+        row.update(tpeak=lc.time[8],logbf_flare_vs_alternatives=2.)
         with patch.object(b,'prepare',return_value=(p,{})), \
              patch.object(b,'find_candidates',return_value=[self.candidate(51)]), \
              patch.object(b,'_fit_one',return_value=(row,None)):
             frame,_,_,_=b.analyze(lc,cfg)
         self.assertEqual(frame.iloc[0].tier,'rejected')
         self.assertIn('log_bayes_factor_below_threshold',frame.iloc[0].reason)
+        self.assertTrue(frame.iloc[0].edge_case)
         self.assertFalse(frame.iloc[0].edge_review_only)
 
     def test_independently_rejected_artifact_is_not_promoted(self):

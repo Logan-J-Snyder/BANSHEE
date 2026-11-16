@@ -7,6 +7,6 @@ authors:
     given-names: Logan
 repository-code: "https://github.com/Logan-J-Snyder/BANSHEE"
 url: "https://github.com/Logan-J-Snyder/BANSHEE"
-version: "2026.11.10.cutoffs1"
-date-released: 2026-11-10
+version: "2026.11.16.edge1"
+date-released: 2026-11-16
 abstract: "Stellar-flare screening and exposure-averaged parameter measurement with BANSHEE Final, including local-noise estimates and empirical SAP calibration."

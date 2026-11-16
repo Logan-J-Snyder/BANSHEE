@@ -26,7 +26,7 @@ The 600s test now uses the same pre-injection transient-screening rule as the
 other groups. All five groups pass their stated calibration checks.
 
 The new 1800s result permits otherwise-passing events to be accepted. It does
-not override morphology, edge-only follow-up, missing-stream validation or
+not override morphology, the recorded edge policy, missing-stream validation or
 parameter-quality decisions. Old output folders must not be resumed with this
 changed version. Previously saved results are not automatically reclassified.
 
