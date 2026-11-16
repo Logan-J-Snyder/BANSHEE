@@ -1,0 +1,92 @@
+{
+  "catalog_sha256": "445f5e9a83f977c5ee6711a0ea5241e2b43565879673c0a9871f17830ded0feb",
+  "config": {
+    "allow_uncalibrated": false,
+    "already_detrended": false,
+    "amplitude_prior_scales": [
+      0.0003,
+      0.001,
+      0.003,
+      0.01,
+      0.03,
+      0.1,
+      0.3,
+      1.0
+    ],
+    "broad_fwhm_points": 41,
+    "broad_tpeak_points": 9,
+    "builtin_calibration": true,
+    "calibration_file": "",
+    "candidate_sigma": 3.0,
+    "candidate_workers": 1,
+    "chi2_fit": true,
+    "chi2_max_nfev": 200,
+    "detailed_fwhm_points": 121,
+    "detailed_mass": 0.995,
+    "detailed_tpeak_points": 61,
+    "detection_statistic": "alternatives",
+    "direction_threshold": 2.302585092994046,
+    "distance_column": "distance_pc",
+    "edge_fraction": 0.05,
+    "edge_scope": "lightcurve",
+    "energy_method": "supplied",
+    "expand_sigma": 1.0,
+    "flare_model": "tovar2022",
+    "flux_column": "SAP_FLUX",
+    "flux_is_residual": false,
+    "fwhm_max_minutes": 2880.0,
+    "fwhm_min_minutes": 0.1,
+    "gap_factor": 5.0,
+    "high_snr_boundary": 8.0,
+    "high_snr_logbf_threshold": null,
+    "ilin": {
+      "clip_sigma": 3.5,
+      "cosine_iterations": 5,
+      "gap_hours": 2.0,
+      "noise_clip_sigma": 1.5,
+      "noise_hours": 2.0,
+      "savgol_hours": [
+        6.0,
+        3.0
+      ],
+      "spline_hours": 6.0,
+      "spline_min_days": 5.0
+    },
+    "impulse_margin": 1.0,
+    "local_window_hours": 12.0,
+    "logbf_threshold": 1.3862943611198906,
+    "max_candidates": 0,
+    "noise_min_points": 41,
+    "noise_window_hours": 2.0,
+    "protection_iterations": 2,
+    "protection_padding": 2.0,
+    "quality_zero_only": true,
+    "raw_signal_threshold": 5.0,
+    "raw_step_margin": 2.0,
+    "rise_factors": [
+      0.5,
+      1.0,
+      2.0
+    ],
+    "sigma_clip": 3.0,
+    "sigma_clip_iterations": 10,
+    "stellar_catalog_paths": [],
+    "symmetric_margin": 0.0,
+    "tess_band_luminosity_erg_s": null,
+    "tess_effective_bandwidth_hz": 120000000000000.0
+  },
+  "detector": "2026.11.16.edge1",
+  "detector_sha256": "d40eec41bb86aa863b4911bbb4125c60ddd5a3a6f128cc2a90a2bb0ab2a5de59",
+  "index_sha256": [
+    "58898c39cec4fb55363c976ee21a3aad595868a25fcec4f4782178f42fabaa83",
+    "9d02be8d18750dfef9dbed2af1306d9c3c314b9073b0fc21491fb4a36ed28a25"
+  ],
+  "pairs": 1371,
+  "runner_sha256": "3b55d22e17c428c59913d339918e00c1c58cb4655d4683d3ff6b0577d670ecd8",
+  "single_peaks": 5201,
+  "tolerances_minutes": [
+    2,
+    5,
+    10
+  ]
+}

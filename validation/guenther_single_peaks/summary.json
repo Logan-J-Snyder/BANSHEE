@@ -1,0 +1,131 @@
+{
+  "n_light_curves": 1371,
+  "n_stars": 1173,
+  "cohorts": {
+    "All peaks": {
+      "n": 5201,
+      "accepted": 3971,
+      "followup": 96,
+      "rejected": 671,
+      "no_peak_match": 463
+    },
+    "Covered": {
+      "n": 4836,
+      "accepted": 3735,
+      "followup": 90,
+      "rejected": 632,
+      "no_peak_match": 379
+    },
+    "Interior": {
+      "n": 4276,
+      "accepted": 3335,
+      "followup": 61,
+      "rejected": 555,
+      "no_peak_match": 325
+    }
+  },
+  "interior_by_observed_snr": {
+    "<3": {
+      "n": 281,
+      "accepted": 22,
+      "followup": 1,
+      "rejected": 32,
+      "no_peak_match": 226
+    },
+    "3\u20135": {
+      "n": 1045,
+      "accepted": 683,
+      "followup": 37,
+      "rejected": 305,
+      "no_peak_match": 20
+    },
+    "5\u20138": {
+      "n": 1213,
+      "accepted": 1007,
+      "followup": 17,
+      "rejected": 151,
+      "no_peak_match": 38
+    },
+    "8\u201312": {
+      "n": 677,
+      "accepted": 622,
+      "followup": 1,
+      "rejected": 41,
+      "no_peak_match": 13
+    },
+    "12\u201320": {
+      "n": 622,
+      "accepted": 585,
+      "followup": 2,
+      "rejected": 18,
+      "no_peak_match": 17
+    },
+    "\u226520": {
+      "n": 438,
+      "accepted": 416,
+      "followup": 3,
+      "rejected": 8,
+      "no_peak_match": 11
+    }
+  },
+  "timing_tolerance_sensitivity": {
+    "2": {
+      "n": 5201,
+      "accepted": 3551,
+      "followup": 81,
+      "rejected": 579,
+      "no_peak_match": 990
+    },
+    "5": {
+      "n": 5201,
+      "accepted": 3971,
+      "followup": 96,
+      "rejected": 671,
+      "no_peak_match": 463
+    },
+    "10": {
+      "n": 5201,
+      "accepted": 4008,
+      "followup": 102,
+      "rejected": 689,
+      "no_peak_match": 402
+    }
+  },
+  "edge": {
+    "n": 512,
+    "accepted": 400,
+    "followup": 5,
+    "rejected": 70,
+    "no_peak_match": 37
+  },
+  "parameters": {
+    "amplitude": {
+      "accepted": {
+        "n": 3971,
+        "ratio_p16": 0.6717520320925006,
+        "ratio_p50": 0.8267485966171724,
+        "ratio_p84": 0.9701618620197819
+      },
+      "followup": {
+        "n": 86,
+        "ratio_p16": 0.5669923632924138,
+        "ratio_p50": 0.7528340891690518,
+        "ratio_p84": 0.9927757366052119
+      }
+    },
+    "fwhm": {
+      "accepted": {
+        "n": 3971,
+        "ratio_p16": 0.8095885188639499,
+        "ratio_p50": 1.1526165140267717,
+        "ratio_p84": 1.5171960576771566
+      },
+      "followup": {
+        "n": 86,
+        "ratio_p16": 0.6660418512296434,
+        "ratio_p50": 1.2194891342976222,
+        "ratio_p84": 2.1277181121267623
+      }
+    }
+  }
+}
